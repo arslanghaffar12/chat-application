@@ -4,6 +4,7 @@ const express = require("express");
 const app = express();
 const { default: mongoose } = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require("cors")
 
 
 // const mongoConnectWithRetry = () => {
@@ -20,6 +21,13 @@ const bodyParser = require('body-parser');
 // mongoConnectWithRetry();
 
 // Use body-parser middleware
+
+var corsOptions = {
+    origin : "*",
+    optionsSuccessStatus : 200
+}
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

@@ -27,7 +27,7 @@ async function authenticate(req) {
 
             }, 'mySecret', { expiresIn: '5d' })
 
-            let _user = { ...isExist.toJSON(), token: token }
+            let _user = { ...isExist.toJSON(), token: token , login : true}
 
             return _user
         }

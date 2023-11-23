@@ -1,0 +1,38 @@
+.sidebar {
+    background-color: #6f5cc4;
+    height: 100vh;
+    color: white;
+    /* Text color of the menu items */
+    padding: 20px;
+    /* Adjust the padding as needed */
+    display: flex;
+    /* justify-content: center; */
+
+}
+
+.sidebar li {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+
+
+.title {
+    
+    font-size: 14px; /* Adjust the font size as needed */
+    font-family: sans-serif;
+    font-weight: 400;
+    color: #fff; /* Set the text color to white */
+    /* margin-inline: 12px; */
+    margin-top: 4px;
+    /* font-family: "Mona Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; */
+ /* Add margin for spacing */
+  }

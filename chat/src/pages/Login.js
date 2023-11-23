@@ -90,7 +90,7 @@ export default function Login() {
 
     return (
         <>
-            <div className="container">
+            <div className="containerImg">
                 <div className="card">
                     <div className="form">
                         <div className="left-side">

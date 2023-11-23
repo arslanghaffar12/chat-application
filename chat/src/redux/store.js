@@ -1,9 +1,11 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { authreducer} from "./reducers/auth"
 import { actionTypes } from './constants/action-types';
+import { userReducer } from './reducers/user';
 
 const combinedReducer = combineReducers({
-  auth : authreducer
+  auth : authreducer,
+  users : userReducer
 });
 
 console.log("combinedReducer",combinedReducer)

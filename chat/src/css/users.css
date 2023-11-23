@@ -1,0 +1,38 @@
+:root {
+
+    --primary-dark: #504190;
+    --primary: #6f5cc4;
+    --primary-text: #969fb0;
+    --primary-text-light: #c6cbd4;
+    --primary-text-dark: #334666;
+
+}
+
+.totalStatus {
+    height: 43px;
+    font-size: 14px;
+    font-size: 14px;
+    color: #969fb0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: end;
+    padding-top: 20px;
+
+
+}
+
+table td,
+th {
+    color: var(--primary-text) !important;
+    font-size: 14px;
+    font-weight: 400;
+
+}
+
+table thead th {
+    color: var(--primary-text) !important;
+    font-size: 14px;
+    font-weight: 600;
+
+}

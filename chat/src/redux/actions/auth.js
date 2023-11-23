@@ -21,3 +21,11 @@ export const setForgotEmailStatus = (payload) => {
         payload: payload
     }
 }
+
+export const setAllUsers = (payload) => {
+    return {
+        type: actionTypes.ALL_USERS,
+        payload: payload
+    }
+}
+

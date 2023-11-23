@@ -1,8 +1,30 @@
+
+:root {
+  
+  --primary-dark: #504190;
+  --primary: #6f5cc4;
+  --primary-text-dark: #334666;
+  --primary-text: #969fb0;
+  --primary-text-light: #c6cbd4;
+  --primary-light: #e89f31;
+  --bs-primary: #E88131;
+  --secondary: #AAAAAA;
+  --bs-secondary-rgb: #AAAAAA;
+  --dark: #000000;
+  --light-black: #324054;
+  --light-dark: #484964;
+  --white: #FFFFFF;
+  --highlight: #F8F7FA;
+  --silver: #dfdfdf;
+  --success: #57E777;
+  --danger: red;
+  --light-bg: #f0f8ff;
+}
+
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Mona Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -21,15 +43,35 @@ code {
   box-sizing: border-box
 }
 
-.container {
+
+.btn-primary,
+.btn-outline-primary.active,
+.btn-outline-primary:hover {
+  border-color: var(--primary) !important;
+  background-color: var(--primary) !important;
+  color: var(--white) !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  font-family: sans-serif;
+  --bs-btn-focus-shadow-rgb: none !important;
+  -bs-btn-focus-shadow-rgb: none !important
+}
+
+/* .container {
+  background-color: #2a2739;
+  margin: 0 !important;
+  width: 100% !important;
+} */
+
+.containerImg {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  /* min-height: 100vh; */
   background-color: #E2CF81
 }
 
-.container .card {
+.containerImg .card {
   height: 500px;
   width: 800px;
   background-color: #fff;
@@ -39,13 +81,13 @@ code {
   border-radius: 10px
 }
 
-.container .card .form {
+.containerImg .card .form {
   width: 100%;
   height: 100%;
   display: flex
 }
 
-.container .card .left-side {
+.containerImg .card .left-side {
   width: 50%;
   background-color: #000;
   height: 100% !important;
@@ -60,7 +102,7 @@ code {
   object-fit: cover
 }
 
-.container .card .right-side {
+.containerImg .card .right-side {
   width: 50%;
   background-color: #efecf2;
   height: 100%;
@@ -245,16 +287,39 @@ input[type="password"] {
 }
 
 @media (max-width:750px) {
-  .container .card {
+  .containerImg .card {
     max-width: 350px
   }
 
-  .container .card .right-side {
+  .containerImg .card .right-side {
     border-radius: 10px;
     width: 100%
   }
 
-  .container .card .left-side {
+  .containerImg .card .left-side {
     display: none
   }
+}
+
+.container-fluid {
+  background-color: "#f7f7f7"
+}
+
+.Button:focus {
+  outline: none;
+}
+
+.btn-secondary {
+      --bs-btn-focus-shadow-rgb: none;
+
+}
+
+.text-right {
+  text-align: end !important;
+}
+
+
+.heading {
+  padding : 0;
+  font-weight : 600 
 }

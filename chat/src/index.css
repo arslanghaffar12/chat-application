@@ -1,6 +1,5 @@
-
 :root {
-  
+
   --primary-dark: #504190;
   --primary: #6f5cc4;
   --primary-text-dark: #334666;
@@ -41,6 +40,27 @@ code {
   margin: 0;
   padding: 0;
   box-sizing: border-box
+}
+
+.primary-text {
+  color: var(--primary-text) !important
+}
+
+.full-height-card {
+  height: 100vh !important;
+
+}
+
+
+.chat-card {
+  height: 80vh !important;
+}
+
+
+
+
+.w-98 {
+  width: 98%;
 }
 
 
@@ -310,7 +330,7 @@ input[type="password"] {
 }
 
 .btn-secondary {
-      --bs-btn-focus-shadow-rgb: none;
+  --bs-btn-focus-shadow-rgb: none;
 
 }
 
@@ -320,6 +340,29 @@ input[type="password"] {
 
 
 .heading {
-  padding : 0;
-  font-weight : 600 
+  padding: 0;
+  font-weight: 600;
+
+}
+
+#style-3::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px #fff;
+  background-color: #dee2e6;
+}
+
+#style-3::-webkit-scrollbar {
+  width: 3px !important;
+  background-color: #dee2e6 !important;
+}
+
+#style-3::-webkit-scrollbar-thumb {
+  background-color: #dee2e6;
+}
+
+.scrolled {
+  /* Add your styling rules for the scrolled state here */
+  border-top: 1px solid #c7ccd5;
+  width: 98%;
+  /* background-color: #c7ccd5; */
+  /* Any other styling changes you want when scrolled */
 }

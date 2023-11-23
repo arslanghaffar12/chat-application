@@ -1,0 +1,24 @@
+
+:root {
+
+    --primary-dark: #504190;
+    --primary: #6f5cc4;
+    --primary-text: #969fb0;
+    --primary-text-light: #c6cbd4;
+    --primary-text-dark: #334666;
+
+}
+
+.user-name{
+    
+    color: var(--primary-text-dark) !important;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.my-chat {
+    
+    color: var(--primary-text-dark) !important;
+    font-size: 14px;
+    font-weight: 600;
+}

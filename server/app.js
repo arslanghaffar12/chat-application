@@ -33,6 +33,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/users', require('./users/user.controller'))
 app.use('/chat', require('./chat/chat.controller'))
+app.use('/conversation', require('./conversation/conversation.controller'))
+
 
 
 

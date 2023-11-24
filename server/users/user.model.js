@@ -9,5 +9,5 @@ const schema = new Schema({
 }, { timestamps: { createdAt: 'created_at' } }
 )
 
-schema.set('toJSON', {virtuals : true})
+schema.set('toJSON', {virtual : true})
 module.exports = mongoose.model('user', schema)

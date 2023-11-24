@@ -9,19 +9,13 @@ module.exports = {
 }
 
 
-async function postMessage(req) {
+async function postMessage(requestData) {
 
 
     try {
 
-        let message = {
-            content: req.content,
-            senderId: req.senderId,
-            senderName: req.senderName,
-            recipientId: req.recipientId,
-            recipientName: req.recipientName,
-        }
-        const new_chat = new Chat(message);
+
+        const new_chat = new Chat(requestData);
 
         return await new_chat.save()
     }

@@ -15,5 +15,6 @@ connectdb();
 
 module.exports = {
     User : require('../users/user.model'),
-    Chat : require("../chat/chat.model")
+    Chat : require("../chat/chat.model"),
+    Conversation : require("../conversation/conversation.model")
 }

@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 
 const schema = new Schema({
+    conservationId : {type : Schema.Types.ObjectId, required : true, ref : "conservation"},
     content : {type : String, required : true},
     senderId : {type : String, required : true},
     senderName : {type : String, required : true},
@@ -12,5 +13,5 @@ const schema = new Schema({
     timestamp : {type: Date, default: Date.now}
 })
 
-schema.set("toJSON", {virtuals : true}),
+schema.set("toJSON", {virtual : true}),
 module.exports = mongoose.model("chat", schema)

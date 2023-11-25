@@ -5,6 +5,8 @@ const Schema = mongoose.Schema;
 const schema = new Schema({
     // content: { type: String, required: true },
     participants: [{ type: String, required: true, default: [] }],
+    timestamp : {type: Date, default: Date.now}
+
 
 
 })

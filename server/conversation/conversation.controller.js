@@ -4,7 +4,7 @@ const service = require('./conversation.service');
 const resHandler = require("../helpers/responseHandler")
 
 
-router.post("/", getAll)
+router.get("/", getAll)
 router.get('/:id',getById);
 router.post("/checkByParticipants", checkByParticipants)
 router.post("/createIfNotExist", createIfNotExist)
@@ -48,6 +48,7 @@ async function checkByParticipants(req, res, next) {
 async function createIfNotExist(req, res, next) {
     service.createIfNotExist(req)
         .then(response => {
+            console.log("response of created",response)
             resHandler.getSuccess(res, response)
         })
         .catch(err => {

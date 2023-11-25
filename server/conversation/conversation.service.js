@@ -75,14 +75,16 @@ async function createIfNotExist(req) {
     try {
 
         let participants = req.body.participants;
+        console.log("participants are",participants)
 
         let isExist = await Conversation.find({ participants: participants })
+        console.log("participants are exist",isExist)
 
-        if(isExist){
+        if(isExist && isExist.length > 0){
             return isExist
         }
 
-        let _conversation = new Conversation(participants);
+        let _conversation = new Conversation({participants: participants});
         _conversation.save();
 
         return _conversation

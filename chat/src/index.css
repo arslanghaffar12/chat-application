@@ -334,6 +334,11 @@ input[type="password"] {
 
 }
 
+.btn {
+  --bs-btn-focus-shadow-rgb: none;
+
+}
+
 .text-right {
   text-align: end !important;
 }

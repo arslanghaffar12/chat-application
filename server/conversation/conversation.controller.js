@@ -5,7 +5,8 @@ const resHandler = require("../helpers/responseHandler")
 
 
 router.get("/", getAll)
-router.get('/:id',getById);
+router.get("/getByUser", getByUser)
+router.get('/:id', getById);
 router.post("/checkByParticipants", checkByParticipants)
 router.post("/createIfNotExist", createIfNotExist)
 
@@ -48,10 +49,22 @@ async function checkByParticipants(req, res, next) {
 async function createIfNotExist(req, res, next) {
     service.createIfNotExist(req)
         .then(response => {
-            console.log("response of created",response)
+            console.log("response of created", response)
             resHandler.getSuccess(res, response)
         })
         .catch(err => {
             resHandler.errorResponse(res, err)
+        })
+}
+
+async function getByUser(req, res, next) {
+    console.log("this is running")
+    console.log("req.query.id",req.query.id)
+    service.getByUser(req.query.id)
+        .then(response => {
+            resHandler.getSuccess(res, response)
+        })
+        .catch(err => {
+            resHandler.getSuccess(res, err)
         })
 }

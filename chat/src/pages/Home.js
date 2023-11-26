@@ -3,11 +3,36 @@ import { ChevronDown, ChevronUp } from 'react-feather'
 import { Card, Col, Row } from 'reactstrap'
 import "../css/chat.css"
 import brand from "../assets/img/download.png"
+import useLocalStorage from '../hooks/useLocalStorage'
+import { getChatByConversationId, getConservationByUser } from '../helpers/request'
+import { useDispatch, useSelector } from 'react-redux'
 
 export default function Home() {
 
   const [isScrolled, setIsScrolled] = useState(false);
-  console.log('isScrolled', isScrolled);
+  const [allChats, setAllChats] = useLocalStorage('allChats', []);
+  console.log('allChats', allChats);
+
+  const user = useSelector(state => state.auth.user);
+  const dispatch = useDispatch()
+
+  const fetchConservationIds = async () => {
+
+    const response = await getConservationByUser({ _id: user._id, dispatch });
+    console.log('getConservationByUser',response);
+
+    if (response.status) {
+      let _chats = [];
+      for (let i = 0; i < response.data.length; i++) {
+        const chats = await getChatByConversationId({ conservationId: response.data[i]._id })
+        _chats.push(chats)
+      }
+      setAllChats(_chats)
+
+    }
+
+  }
+
 
 
   useEffect(() => {
@@ -28,6 +53,8 @@ export default function Home() {
       dataListingDiv.addEventListener('scroll', handleScroll);
     }
 
+
+
     // Cleanup the event listener on component unmount
     return () => {
       if (dataListingDiv) {
@@ -35,6 +62,13 @@ export default function Home() {
       }
     };
   }, []);
+
+
+  useEffect(() => {
+    fetchConservationIds()
+  }, [])
+
+
 
 
 
@@ -77,7 +111,7 @@ export default function Home() {
 
             </div>
 
-            <div className={`m-3 ${isScrolled ? 'scrolled' : ''}`} id="style-3" style={{ width: "100%", overflowY: "auto", cursor :"pointer" }}>
+            <div className={`m-3 ${isScrolled ? 'scrolled' : ''}`} id="style-3" style={{ width: "100%", overflowY: "auto", cursor: "pointer" }}>
               {Data.map((item, ind) => (
                 <div key={ind} className='d-flex align-items-center border-bottom py-2'>
                   <img src={item.photo} alt={item.memberName} style={{ width: '50px', height: '50px' }} className="rounded-circle me-3" />

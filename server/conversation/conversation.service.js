@@ -6,7 +6,8 @@ module.exports = {
     getById,
     create,
     createIfNotExist,
-    checkByParticipants
+    checkByParticipants,
+    getByUser
 }
 
 async function getAll(req) {
@@ -92,6 +93,16 @@ async function createIfNotExist(req) {
     }
     catch (err) {
         throw err
+    }
+}
+
+async function getByUser(id) {
+
+    try {
+        return await Conversation.find({participants : id})
+    }
+    catch (err) {
+        return err
     }
 }
 

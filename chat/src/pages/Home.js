@@ -19,7 +19,7 @@ export default function Home() {
   const fetchConservationIds = async () => {
 
     const response = await getConservationByUser({ _id: user._id, dispatch });
-    console.log('getConservationByUser',response);
+    // console.log('getConservationByUser',response);
 
     if (response.status) {
       let _chats = [];

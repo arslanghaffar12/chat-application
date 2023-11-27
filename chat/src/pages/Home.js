@@ -4,7 +4,7 @@ import { Card, Col, Row } from 'reactstrap'
 import "../css/chat.css"
 import brand from "../assets/img/download.png"
 import useLocalStorage from '../hooks/useLocalStorage'
-import { getChatByConversationId, getConservationByUser } from '../helpers/request'
+import { getChatByConversationId, getConservationByUser ,getByCvnIdsRequest} from '../helpers/request'
 import { useDispatch, useSelector } from 'react-redux'
 
 export default function Home() {
@@ -22,12 +22,19 @@ export default function Home() {
     // console.log('getConservationByUser',response);
 
     if (response.status) {
-      let _chats = [];
-      for (let i = 0; i < response.data.length; i++) {
-        const chats = await getChatByConversationId({ conservationId: response.data[i]._id })
-        _chats.push(chats)
+      const payload = {
+        data: {
+          cnv_ids: response.data.map((item) => { return item._id })
+        }
       }
-      setAllChats(_chats)
+
+      const _allChats = await getByCvnIdsRequest(payload);
+
+      if(_allChats.status){
+        setAllChats(_allChats.data)
+
+      }
+
 
     }
 

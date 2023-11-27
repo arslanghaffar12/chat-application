@@ -5,9 +5,11 @@ const resHandler = require("../helpers/responseHandler")
 
 // router.get("/", getAll);
 router.get("/", getAll);
-router.post("/insert", postMessage);
 router.get("/getMessages", getMessages);
-router.get("/getByConversationId", getByConversationId)
+router.get("/getByConversationId", getByConversationId);
+router.post("/insert", postMessage);
+router.post('/getByCoversationIds', getByCoversationIds)
+
 
 module.exports = router;
 
@@ -48,6 +50,17 @@ function getByConversationId(req, res, next) {
         .then(response => {
             console.log("messages are", response)
 
+            resHandler.getSuccess(res, response)
+        })
+        .catch(err => {
+            resHandler.errorResponse(res, err)
+        })
+}
+
+
+function getByCoversationIds(req, res, next) {
+    chatService.getByCoversationIds(req.body)
+        .then(response => {
             resHandler.getSuccess(res, response)
         })
         .catch(err => {

@@ -87,3 +87,24 @@ export const getChatByConversationId = async (requestData) => {
     return data
 
 }
+
+
+export const getByCvnIdsRequest = async (requestData) => {
+
+    var response = await axios({
+        method: 'POST',
+        data : requestData.data,
+        url: `${baseUrl}chat/getByCoversationIds`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}

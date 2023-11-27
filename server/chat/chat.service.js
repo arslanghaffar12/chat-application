@@ -1,5 +1,5 @@
 const db = require("../helpers/db")
-const mongoose = require("mongoose")
+const mongoose = require('mongoose');
 const Chat = db.Chat;
 
 
@@ -9,7 +9,8 @@ module.exports = {
     getAll,
     postMessage,
     getMessages,
-    getByConversationId
+    getByConversationId,
+    getByCoversationIds
 }
 
 
@@ -70,3 +71,32 @@ async function getByConversationId(id) {
     }
 
 }
+
+async function getByCoversationIds(requestData) {
+    console.log("requestData in ", requestData);
+
+    // let all_ids = requestData.cnv_ids;
+    try {
+
+        let all_ids = requestData.cnv_ids.map(id => new mongoose.Types.ObjectId(id));
+        console.log("all_ids", all_ids)
+        const result = await Chat.aggregate([
+            {
+                $match: { conversationId: { $in: all_ids } },
+            },
+            {
+                $group: {
+                    _id: '$conversationId',
+                    messages: { $push: '$$ROOT' },
+                },
+            },
+        ]);
+
+
+
+        return result;
+    } catch (error) {
+        throw error;
+    }
+}
+

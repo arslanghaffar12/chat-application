@@ -90,6 +90,64 @@ async function getByCoversationIds(requestData) {
                     messages: { $push: '$$ROOT' },
                 },
             },
+            {
+                $addFields: {
+                    firstMessage: {
+                        $let: {
+                            vars: {
+                                firstMessage: { $arrayElemAt: ['$messages', 0] }
+                            },
+                            in: {
+                                senderId: '$$firstMessage.senderId',
+                                recipientId: '$$firstMessage.recipientId',
+                                // Add more fields as needed
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    otherUserId: {
+                        $cond: {
+                            if: {
+                                $eq: ['$firstMessage.senderId', new mongoose.Types.ObjectId(requestData.user_id)]
+                            },
+                            then: '$firstMessage.senderId',
+                            else: '$firstMessage.recipientId'
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0, // exclude _id from the final result
+                    conversationId: '$_id',
+                    messages: 1,
+                    otherUserId: { $toObjectId: '$otherUserId' },
+                }
+            },
+
+
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'otherUserId',
+                    foreignField: '_id',
+                    as: 'userDetails'
+                }
+            },
+
+            {
+                $project: {
+                    conversationId: 1,
+                    messages: 1,
+                    userDetails: { $arrayElemAt: ['$userDetails', 0] }
+                }
+            }
+
+
+
         ]);
 
 

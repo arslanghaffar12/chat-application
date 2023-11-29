@@ -2,7 +2,7 @@ import React, { Fragment, useState } from 'react'
 import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, Row, Col, NavItem } from 'reactstrap'
 import brand from "../assets/img/brand.jpg"
 import "../css/topHeader.css"
-import { Bell, MoreVertical } from 'react-feather'
+import { Bell, MoreVertical, Smile } from 'react-feather'
 
 export default function TopHeaders() {
 

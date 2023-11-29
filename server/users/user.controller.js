@@ -7,6 +7,7 @@ const resHandler = require("../helpers/responseHandler")
 router.get('/', getAll);
 router.post('/create', create);
 router.post('/authenticate', authenticate);
+router.post("/:id", update)
 
 module.exports = router;
 
@@ -41,4 +42,12 @@ function create(req, res, next) {
         })
         .catch(err => next(err))
 
+}
+
+function update(req, res, next) {
+    userService.update(req.params.id, req.body)
+        .then(response => {
+            resHandler.insertSuccess(res, response)
+        })
+        .catch(err => next(err))
 }

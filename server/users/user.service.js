@@ -6,7 +6,8 @@ const bycrypt = require("bcryptjs");
 module.exports = {
     getAll,
     create,
-    authenticate
+    authenticate,
+    update
 }
 
 
@@ -66,4 +67,25 @@ async function create(req, res) {
     }
 
     return await newUser.save();
+}
+
+async function update(id, body) {
+
+    let isExist = await User.findById(id);
+
+    if(!isExist){
+        throw 'user not exist'
+    }
+
+    if(isExist.email !== body.email && await User.findOne({email : body.email})){
+        throw "already_existed"
+    }
+
+    if(body.password){
+        isExist.password_hash = bycrypt.hashSync(body.password, 10);
+    }
+
+    Object.assign(isExist, body);
+    await isExist.save();
+    return await User.findOne({_id : id})
 }

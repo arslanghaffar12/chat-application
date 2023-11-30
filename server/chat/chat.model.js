@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 
 const schema = new Schema({
-    conservationId : {type : Schema.Types.ObjectId, required : true, ref : "conservation"},
+    conversationId : {type : Schema.Types.ObjectId, required : true, ref : "conversation"},
     content : {type : String, required : true},
     senderId : {type : String, required : true},
     senderName : {type : String, required : true},

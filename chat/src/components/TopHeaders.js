@@ -1,16 +1,24 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, Row, Col, NavItem } from 'reactstrap'
 import brand from "../assets/img/brand.jpg"
 import "../css/topHeader.css"
-import { Bell, MoreVertical } from 'react-feather'
+import { Bell, MoreVertical, Smile } from 'react-feather'
+import io from "socket.io-client"
+import { baseUrl } from '../helpers/request'
+import { useSelector } from 'react-redux'
 
 export default function TopHeaders() {
 
     const [isOpen, setisOpen] = useState(true)
+    const user = useSelector(state => state.auth.user);
 
     const toggle = () => {
         setisOpen(!isOpen)
     }
+
+    const socket = io("http://localhost:4200");
+
+   
     return (
         <Fragment>
 
@@ -34,13 +42,13 @@ export default function TopHeaders() {
                     <Nav className='profileMenu'>
 
                         {/* <div className='profileMenu'> */}
-                            <NavItem> <Bell style={{ marginRight: "20px" }} size={14} color='#fff' /></NavItem>
-                            <NavItem><img className='brand-logo' src={brand} /></NavItem>
-                            <NavItem><div className='profile-name'>
-                                <h2 className=''>Arslan Ghaffar</h2>
-                                <h2>Admin</h2>
-                            </div></NavItem>
-                            <NavItem> <MoreVertical size={14} color='#fff' /></NavItem>
+                        <NavItem> <Bell style={{ marginRight: "20px" }} size={14} color='#fff' /></NavItem>
+                        <NavItem><img className='brand-logo' src={brand} /></NavItem>
+                        <NavItem><div className='profile-name'>
+                            <h2 className=''>Arslan Ghaffar</h2>
+                            <h2>Admin</h2>
+                        </div></NavItem>
+                        <NavItem> <MoreVertical size={14} color='#fff' /></NavItem>
 
                         {/* </div> */}
                     </Nav>

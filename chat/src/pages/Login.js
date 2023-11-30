@@ -3,9 +3,9 @@ import { EyeOff, Eye } from 'react-feather';
 import logo from "../assets/img/logo.png"
 import { Button, Row, Col } from 'reactstrap';
 import { authenticate } from '../helpers/request';
-import useLocalStorage from '../hooks/useLocalStorage';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 
 export default function Login() {

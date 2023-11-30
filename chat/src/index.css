@@ -52,8 +52,9 @@ code {
 }
 
 
-.chat-card {
-  height: 80vh !important;
+
+.margin-unset {
+  margin: unset !important;
 }
 
 

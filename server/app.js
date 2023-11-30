@@ -4,8 +4,17 @@ const express = require("express");
 const app = express();
 const { default: mongoose } = require('mongoose');
 const bodyParser = require('body-parser');
-const cors = require("cors")
-
+const http = require('http');
+const server = http.createServer(app);
+const sio = require('socket.io')(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
+const cors = require("cors");
+const { User } = require("./helpers/db");
+const { postMessage } = require("./chat/chat.service");
 
 // const mongoConnectWithRetry = () => {
 //     return mongoose.connect("mongodb://127.0.0.1:27017/chat", {
@@ -23,8 +32,8 @@ const cors = require("cors")
 // Use body-parser middleware
 
 var corsOptions = {
-    origin : "*",
-    optionsSuccessStatus : 200
+    origin: "*",
+    optionsSuccessStatus: 200
 }
 
 app.use(cors(corsOptions));
@@ -42,8 +51,46 @@ app.use('/conversation', require('./conversation/conversation.controller'))
 // mongoConnectWithRetry()
 
 
-app.listen(4200, function () {
+server.listen(4200, function () {
     console.log("Server is listening on 4200");
 });
 
 
+
+
+sio.on('connection', function (socket) {
+  
+
+    socket.on('disconnect', async ()=> {
+        console.log('user disconnected:', socket.id);
+        // await socketService.create({ socket: socket.id, connect: false });
+        // socket.leave('room_' + connections[socket.id]);
+        // delete connections[socket.id];
+    });
+
+
+    socket.on("joinRoom", ({conversationId, user}) => {
+        socket.join(conversationId);
+        console.log('socket.join(conversationId)',socket.join(conversationId));
+        console.log(`${user.name} has join the room with ${conversationId}`)
+    })
+
+
+    socket.on('message', async (messageData) => {
+        try {
+          // Save message to the database if needed
+
+        //    await  postMessage(messageData)
+          // Emit the message to the conversation room
+          sio.to(messageData.conversationId).emit('message', messageData);
+
+          console.error('messageData is', messageData);
+
+        } catch (error) {
+          console.error('Error emitting message:', error);
+        }
+      });
+
+
+
+})

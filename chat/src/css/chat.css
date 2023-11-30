@@ -15,6 +15,13 @@
     font-weight: 600;
 }
 
+.chat-card {
+    height: 80vh !important;
+    display: flex;
+    flex-direction: column;
+}
+
+
 .my-chat {
 
     color: var(--primary-text-dark) !important;
@@ -25,7 +32,8 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 
@@ -64,7 +72,10 @@
 .chat-footer {
     background-color: #fff !important;
     border-color: #e6e8ed !important;
-    height: 65px !important;
+    /* display: flex;
+    align-items: center;
+    padding: 0.5rem; */
+    /* height: 65px !important; */
 }
 
 .totalCenter {
@@ -72,4 +83,37 @@
     align-items: center;
     display: flex;
     text-align: center;
+}
+
+
+
+.chat-input {
+    width: calc(80% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    background-color: white;
+    font-size: 16px;
+    min-height: 2lh;
+    max-height: 7lh;
+    resize: none;
+}
+
+.chat-input::placeholder {
+    color: #999;
+}
+
+.chat-footer .chat-input {
+    width: calc(100% - 20px);
+    /* Adjusted width for the footer */
+    min-height: 20px;
+    /* Adjusted minimum height for the footer */
+}
+
+.chat-input:focus {
+    border-color: var(--primary);
+    /* Example color change on focus */
+    box-shadow: 0 0 5px var(--primary-dark);
+    /* Example box shadow on focus */
 }

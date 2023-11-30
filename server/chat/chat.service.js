@@ -111,10 +111,10 @@ async function getByCoversationIds(requestData) {
                     otherUserId: {
                         $cond: {
                             if: {
-                                $eq: ['$firstMessage.senderId', new mongoose.Types.ObjectId(requestData.user_id)]
+                                $eq: ['$firstMessage.senderId', (requestData.user_id)]
                             },
-                            then: '$firstMessage.senderId',
-                            else: '$firstMessage.recipientId'
+                            then: '$firstMessage.recipientId',
+                            else: '$firstMessage.senderId'
                         }
                     }
                 }

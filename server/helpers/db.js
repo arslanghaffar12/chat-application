@@ -7,7 +7,7 @@ const connectdb = () => {
     }).then(() => console.log('Mongodb is connected'))
     .catch((err) => {
         console.error("Connection to MongoDB failed:", err);
-        setTimeout(connectdb, 10000);
+        setTimeout(connectdb, 1000);
     })
 }
 

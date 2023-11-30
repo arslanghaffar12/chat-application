@@ -3,7 +3,7 @@ import axios from "axios";
 import { setAllUsers, setLogin } from "../redux/actions/auth";
 
 
-const baseUrl = "http://localhost:4200/"
+export const baseUrl = "http://localhost:4200/";
 export const authenticate = async (requestData) => {
 
     var response = await axios({
@@ -95,6 +95,26 @@ export const getByCvnIdsRequest = async (requestData) => {
         method: 'POST',
         data : requestData.data,
         url: `${baseUrl}chat/getByCoversationIds`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+
+export const postMessageRequest = async (requestData) => {
+
+    var response = await axios({
+        method: 'POST',
+        data : requestData.data,
+        url: `${baseUrl}chat/insert`,
         headers: {
             "Content-Type": "application/json",
             // "Authorization": "Bearer " + user.token,

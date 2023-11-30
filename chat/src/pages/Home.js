@@ -1,26 +1,34 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { Card, CardBody, CardFooter, CardHeader, Col, Row } from 'reactstrap'
 import "../css/chat.css"
 import brand from "../assets/img/download.png"
-import { getChatByConversationId, getConservationByUser, getByCvnIdsRequest } from '../helpers/request'
+import { getChatByConversationId, getConservationByUser, getByCvnIdsRequest, postMessageRequest } from '../helpers/request'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { Bell, MoreVertical, Smile, Send } from 'react-feather'
+import useAutosizeTextArea from '../hooks/useAutoSizeTextArea'
+import io from "socket.io-client"
+
+
 export default function Home() {
 
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [allChats, setAllChats] = useState([])
-  const [currentChat, setCurrentChat] = useState({ messages: [] });
-  console.log('allChats', allChats);
 
+  const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {} });
+  console.log('currentChat',currentChat);
+
+  const [isScrolled, setIsScrolled] = useState(false);
   const user = useSelector(state => state.auth.user);
+  const [allChats, setAllChats] = useState([])
+  console.log('allChats', allChats);
+  const [message, setMessage] = useState()
+  const textAreaRef = useRef()
+  useAutosizeTextArea(textAreaRef.current, message)
   const dispatch = useDispatch()
 
   const fetchConservationIds = async () => {
 
     const response = await getConservationByUser({ _id: user._id, dispatch });
-    // console.log('getConservationByUser',response);
 
     if (response.status) {
       const payload = {
@@ -29,18 +37,63 @@ export default function Home() {
           user_id: user._id
         }
       }
-
       const _allChats = await getByCvnIdsRequest(payload);
-
       if (_allChats.status) {
         setAllChats(_allChats.data)
-
       }
-
-
     }
 
   }
+
+  const handleChange = (evt) => {
+    const val = evt.target?.value;
+
+    setMessage(val);
+  };
+
+
+  const socket = io("http://localhost:4200");
+
+
+  const sendMessage = async () => {
+
+
+    let payload = {
+      data: {
+        conversationId: currentChat.conversationId,
+        content: message,
+        senderId: user._id,
+        senderName: user.name,
+        recipientId: currentChat.userDetails._id,
+        recipientName: currentChat.userDetails.name
+      }
+    };
+    console.log('payload', payload.data);
+
+
+    socket.emit('message', payload.data)
+
+    // let response = await postMessageRequest(payload)
+    // if (response.status) {
+    //   let _currentChat = { ...currentChat };
+    //   _currentChat.messages = [..._currentChat.messages, response.data];
+    //   // setCurrentChat(_currentChat)
+    // }
+
+    // console.log('response of post message', response);
+
+
+
+
+  }
+
+
+
+
+
+
+
+
 
 
 
@@ -77,31 +130,43 @@ export default function Home() {
     fetchConservationIds()
   }, [])
 
+  useEffect(() => {
+    if (currentChat) {
+      socket.emit("joinRoom", { conversationId: currentChat.conversationId, user: user });
+
+
+    }
+
+  }, [currentChat])
+
+
+  useEffect(() => {
+   
+
+    socket.on("message", (message) => {
+      console.log('message is recieing',message);
+      let _currentChat = {...currentChat};
+      _currentChat.messages = [..._currentChat.messages, message];
+      setCurrentChat(_currentChat);
+    })
 
 
 
 
-  const Data = [
-    { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-    { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-    { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
+    return () => {
+      socket.disconnect(); // Disconnect when the component unmounts
+    };
 
-    { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-    { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-    { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
+  }, [])
 
-    { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-    { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-    { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
 
-    { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-    { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-    { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
 
-    { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-    { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-    { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
-  ]
+
+
+
+
+
+
   return (
     <div className='m-3'>
       <h1 className="heading">Chat</h1>
@@ -161,20 +226,24 @@ export default function Home() {
               ))}
             </CardBody>
             <CardFooter className='chat-footer totalCenter p-2'>
-              {/* <div className=''> */}
-                <div style={{ width: '10%' }} className='totalCenter'>
-                  <p className='margin-unset'>#</p>
-                  <Smile size={14} color='#6f5cc4' className='mx-1' />
-                </div>
+              <div style={{ width: '10%' }} className='totalCenter'>
+                <p className='margin-unset'>#</p>
+                <Smile size={14} color='#6f5cc4' className='mx-1' />
+              </div>
 
-                <input className='border-0' style={{ width: "80%" , border : 'none', outline : "none", backgroundColor : "white-smoke"}} placeholder='message'>
-                </input>
-                <div style={{ width: "10%" }}>
-                  <Send size={16} color="#6f5cc4" />
+              <textarea className='border-0 chat-input' placeholder='message'
 
-                </div>
+                ref={textAreaRef}
+                onChange={handleChange}
+                rows={1}
+                value={message}
+              >
+              </textarea >
+              <div style={{ width: "10%" }}>
+                <Send size={16} color="#6f5cc4" onClick={sendMessage} style={{ cursor: 'pointer' }} />
 
-              {/* </div> */}
+              </div>
+
 
             </CardFooter>
 

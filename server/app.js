@@ -69,6 +69,8 @@ sio.on('connection', function (socket) {
     });
 
 
+
+
     socket.on("joinRoom", ({conversationId, user}) => {
         socket.join(conversationId);
         console.log('socket.join(conversationId)',socket.join(conversationId));
@@ -77,19 +79,18 @@ sio.on('connection', function (socket) {
 
 
     socket.on('message', async (messageData) => {
-        try {
+        
           // Save message to the database if needed
 
         //    await  postMessage(messageData)
           // Emit the message to the conversation room
-          sio.to(messageData.conversationId).emit('message', messageData);
+          socket.emit('message',messageData);
 
           console.error('messageData is', messageData);
 
-        } catch (error) {
-          console.error('Error emitting message:', error);
-        }
+        
       });
+
 
 
 

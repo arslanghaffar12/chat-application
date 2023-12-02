@@ -15,7 +15,7 @@ export default function Home() {
 
 
   const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {} });
-  console.log('currentChat',currentChat);
+  console.log('currentChat', currentChat);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const user = useSelector(state => state.auth.user);
@@ -25,7 +25,7 @@ export default function Home() {
   const textAreaRef = useRef()
   useAutosizeTextArea(textAreaRef.current, message)
   const dispatch = useDispatch()
-
+  const [currentRoom, setCurrentRoom] = useState();
   const fetchConservationIds = async () => {
 
     const response = await getConservationByUser({ _id: user._id, dispatch });
@@ -52,7 +52,9 @@ export default function Home() {
   };
 
 
-  const socket = io("http://localhost:4200");
+  // const socket = io("http://localhost:4200");
+
+  const baseUrl = "http://localhost:4200"
 
 
   const sendMessage = async () => {
@@ -71,7 +73,7 @@ export default function Home() {
     console.log('payload', payload.data);
 
 
-    socket.emit('message', payload.data)
+    // socket.emit('message', payload.data)
 
     // let response = await postMessageRequest(payload)
     // if (response.status) {
@@ -130,34 +132,119 @@ export default function Home() {
     fetchConservationIds()
   }, [])
 
-  useEffect(() => {
-    if (currentChat) {
-      socket.emit("joinRoom", { conversationId: currentChat.conversationId, user: user });
+  // useEffect(() => {
+  //   if (currentChat) {
+  //     socket.emit("joinRoom", { conversationId: currentChat.conversationId, user: user });
 
+
+  //   }
+
+  //   return () => {
+  //     socket.disconnect(); // Disconnect when the component unmounts
+  //   };
+
+  // }, [currentChat])
+
+  console.log('current room usetstae is===', currentRoom);
+
+  // useEffect(() => {
+
+
+  //   socket.on('message', (message) => {
+  //     console.log('message is recieing', message);
+  //     let _currentChat = { ...currentChat };
+  //     _currentChat.messages = [..._currentChat.messages, message];
+  //     setCurrentChat(_currentChat);
+  //   })
+
+
+
+
+
+
+
+  //   return () => {
+  //     socket.disconnect(); // Disconnect when the component unmounts
+  //   };
+
+  // }, [])
+
+
+
+
+
+  useEffect(() => {
+
+    const _socket = io(baseUrl);
+
+    const socketConnect = () => {
+      _socket.on('connect', () => {
+        console.log('Connected to Socket.IO server');
+        // _socket.emit("connectionMessage", { sid: user.access.map((item) => { return item._id }) })
+      });
 
     }
 
-  }, [currentChat])
+    socketConnect();
 
 
-  useEffect(() => {
-   
+    _socket.on('disconnect', () => {
+      console.log('socket is disconnected', _socket);
+    })
 
-    socket.on("message", (message) => {
-      console.log('message is recieing',message);
-      let _currentChat = {...currentChat};
-      _currentChat.messages = [..._currentChat.messages, message];
-      setCurrentChat(_currentChat);
+    console.log('socket is connected', _socket.connected);
+
+
+    const handleSocketEvent = (data) => {
+      // Handle the received data from the socket
+      console.log('Received data:', data);
+    };
+
+
+    _socket.on('successfullyConnected', handleSocketEvent);
+
+
+    _socket.on('message', (message) => {
+      console.log('message is recieving', message);
     })
 
 
+    
 
 
-    return () => {
-      socket.disconnect(); // Disconnect when the component unmounts
+
+
+
+
+
+
+
+
+
+    const reconnectSocket = () => {
+      if (!_socket.connected) {
+        // _socket.connect();
+        socketConnect();
+      } else {
+
+        console.log(_socket.connected, "socketStatus")
+      }
     };
 
+
+    const reconnectInterval = setInterval(reconnectSocket, 15000);
+
+    return () => {
+      console.log("runing disconnect")
+      clearInterval(reconnectInterval);
+      _socket.disconnect();
+    };
+
+
+
+
   }, [])
+
 
 
 

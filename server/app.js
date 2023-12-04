@@ -59,9 +59,11 @@ server.listen(4200, function () {
 
 
 sio.on('connection', function (socket) {
-  
+    console.log(`User ${socket.id} connected`);
 
-    socket.on('disconnect', async ()=> {
+
+
+    socket.on('disconnect', async () => {
         console.log('user disconnected:', socket.id);
         // await socketService.create({ socket: socket.id, connect: false });
         // socket.leave('room_' + connections[socket.id]);
@@ -71,25 +73,29 @@ sio.on('connection', function (socket) {
 
 
 
-    socket.on("joinRoom", ({conversationId, user}) => {
+    socket.on("joinRoom", ({ conversationId, user }) => {
         socket.join(conversationId);
-        console.log('socket.join(conversationId)',socket.join(conversationId));
+        console.log('socket.join(conversationId)', socket.join(conversationId));
         console.log(`${user.name} has join the room with ${conversationId}`)
     })
 
 
     socket.on('message', async (messageData) => {
-        
-          // Save message to the database if needed
+
+        // Save message to the database if needed
+        await postMessage(messageData)
 
         //    await  postMessage(messageData)
-          // Emit the message to the conversation room
-          socket.emit('message',messageData);
+        // Emit the message to the conversation room
+        socket.nsp.to(messageData.conversationId).emit('message', messageData);
 
-          console.error('messageData is', messageData);
+        console.error('messageData is', messageData);
 
-        
-      });
+
+    });
+
+
+
 
 
 

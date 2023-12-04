@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { Card, CardBody, CardFooter, CardHeader, Col, Row } from 'reactstrap'
 import "../css/chat.css"
@@ -6,26 +6,32 @@ import brand from "../assets/img/download.png"
 import { getChatByConversationId, getConservationByUser, getByCvnIdsRequest, postMessageRequest } from '../helpers/request'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocalStorage } from '../hooks/useLocalStorage'
-import { Bell, MoreVertical, Smile, Send } from 'react-feather'
 import useAutosizeTextArea from '../hooks/useAutoSizeTextArea'
 import io from "socket.io-client"
+import { SocketContext } from '../SocketContext'
+import ChatBody from '../components/ChatBody'
 
 
 export default function Home() {
 
 
   const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {} });
+  const currentChatRef = useRef(currentChat);
+  console.log('currentChatRef==', currentChatRef);
+  const [cnv_id, setCnv_id] = useState('')
   console.log('currentChat', currentChat);
-
+  const socket = useContext(SocketContext);
+  console.log('socket in home', socket);
   const [isScrolled, setIsScrolled] = useState(false);
   const user = useSelector(state => state.auth.user);
   const [allChats, setAllChats] = useState([])
   console.log('allChats', allChats);
-  const [message, setMessage] = useState()
-  const textAreaRef = useRef()
-  useAutosizeTextArea(textAreaRef.current, message)
+
   const dispatch = useDispatch()
   const [currentRoom, setCurrentRoom] = useState();
+
+
+
   const fetchConservationIds = async () => {
 
     const response = await getConservationByUser({ _id: user._id, dispatch });
@@ -45,49 +51,15 @@ export default function Home() {
 
   }
 
-  const handleChange = (evt) => {
-    const val = evt.target?.value;
 
-    setMessage(val);
-  };
-
-
-  // const socket = io("http://localhost:4200");
-
-  const baseUrl = "http://localhost:4200"
-
-
-  const sendMessage = async () => {
-
-
-    let payload = {
-      data: {
-        conversationId: currentChat.conversationId,
-        content: message,
-        senderId: user._id,
-        senderName: user.name,
-        recipientId: currentChat.userDetails._id,
-        recipientName: currentChat.userDetails.name
-      }
-    };
-    console.log('payload', payload.data);
-
-
-    // socket.emit('message', payload.data)
-
-    // let response = await postMessageRequest(payload)
-    // if (response.status) {
-    //   let _currentChat = { ...currentChat };
-    //   _currentChat.messages = [..._currentChat.messages, response.data];
-    //   // setCurrentChat(_currentChat)
-    // }
-
-    // console.log('response of post message', response);
-
-
-
-
+  const handleChatClick = (item) => {
+    setCnv_id(item.conversationId);
+    setCurrentChat(item)
   }
+
+
+
+
 
 
 
@@ -132,84 +104,43 @@ export default function Home() {
     fetchConservationIds()
   }, [])
 
+  useEffect(() => {
+    if (cnv_id) {
+      socket.emit("joinRoom", { conversationId: currentChat.conversationId, user: user });
+
+
+    }
+
+  }, [cnv_id])
+
+  let count = 1;
+
   // useEffect(() => {
+
   //   if (currentChat) {
-  //     socket.emit("joinRoom", { conversationId: currentChat.conversationId, user: user });
-
-
+  //     console.log('count is==========', ++count);
+  //     currentChatRef.current = currentChat;
   //   }
-
-  //   return () => {
-  //     socket.disconnect(); // Disconnect when the component unmounts
-  //   };
 
   // }, [currentChat])
 
   console.log('current room usetstae is===', currentRoom);
 
-  // useEffect(() => {
-
-
-  //   socket.on('message', (message) => {
-  //     console.log('message is recieing', message);
-  //     let _currentChat = { ...currentChat };
-  //     _currentChat.messages = [..._currentChat.messages, message];
-  //     setCurrentChat(_currentChat);
-  //   })
-
-
-
-
-
-
-
-  //   return () => {
-  //     socket.disconnect(); // Disconnect when the component unmounts
-  //   };
-
-  // }, [])
-
-
-
-
-
   useEffect(() => {
 
-    const _socket = io(baseUrl);
 
-    const socketConnect = () => {
-      _socket.on('connect', () => {
-        console.log('Connected to Socket.IO server');
-        // _socket.emit("connectionMessage", { sid: user.access.map((item) => { return item._id }) })
+    socket.on('message', (message) => {
+      console.log('message is recieing', message);
+ 
+      setCurrentChat((prevChat) => {
+        const updatedChat = { ...prevChat };
+        updatedChat.messages = [...prevChat.messages, message];
+        return updatedChat;
       });
 
-    }
-
-    socketConnect();
-
-
-    _socket.on('disconnect', () => {
-      console.log('socket is disconnected', _socket);
     })
 
-    console.log('socket is connected', _socket.connected);
-
-
-    const handleSocketEvent = (data) => {
-      // Handle the received data from the socket
-      console.log('Received data:', data);
-    };
-
-
-    _socket.on('successfullyConnected', handleSocketEvent);
-
-
-    _socket.on('message', (message) => {
-      console.log('message is recieving', message);
-    })
-
-
-    
+  }, [socket])
 
 
 
@@ -221,29 +152,18 @@ export default function Home() {
 
 
 
-    const reconnectSocket = () => {
-      if (!_socket.connected) {
-        // _socket.connect();
-        socketConnect();
-      } else {
-
-        console.log(_socket.connected, "socketStatus")
-      }
-    };
-
-
-    const reconnectInterval = setInterval(reconnectSocket, 15000);
-
-    return () => {
-      console.log("runing disconnect")
-      clearInterval(reconnectInterval);
-      _socket.disconnect();
-    };
 
 
 
 
-  }, [])
+
+
+
+
+
+
+
+
 
 
 
@@ -274,7 +194,7 @@ export default function Home() {
 
             <div className={`m-3 ${isScrolled ? 'scrolled' : ''}`} id="style-3" style={{ width: "100%", overflowY: "auto", cursor: "pointer" }}>
               {allChats?.map((item, ind) => (
-                <div key={ind} className='d-flex align-items-center border-bottom py-2' onClick={() => setCurrentChat(item)}>
+                <div key={ind} className='d-flex align-items-center border-bottom py-2' onClick={() => handleChatClick(item)}>
                   <img src={item.userDetails.image} alt={item.name} style={{ width: '50px', height: '50px' }} className="rounded-circle me-3" />
                   <div className='d-flex flex-column'>
                     <h4 className='user-name'>{item.userDetails.name}</h4>
@@ -288,55 +208,9 @@ export default function Home() {
           </Card>
         </Col>
         <Col md={8} className='p-0 m-0'>
-
-          <Card className='border-0 chat-card '>
-            <CardHeader className='chat-header'>
-              <Row>
-                <Col md={3} className='totalCenter'>
-                  <img src={currentChat.userDetails.image} alt={currentChat.userDetails.name} style={{ width: '35px', height: '35px' }} className="rounded-circle me-3" />
-                  <h4 className='user-name' style={{ margin: "unset" }}>{currentChat.userDetails.name}</h4>
-
-                </Col>
-                <Col md={2} className=''>
-                </Col>
-              </Row>
-            </CardHeader>
-            <CardBody className='chat-container p-2'>
-              {currentChat.messages.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => (
-                <div
-                  key={index}
-                  className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
-                >
-                  <div className="message-content">{message.content}</div>
-                  {/* <div className="timestamp">{message.timestamp}</div> */}
-                </div>
-              ))}
-            </CardBody>
-            <CardFooter className='chat-footer totalCenter p-2'>
-              <div style={{ width: '10%' }} className='totalCenter'>
-                <p className='margin-unset'>#</p>
-                <Smile size={14} color='#6f5cc4' className='mx-1' />
-              </div>
-
-              <textarea className='border-0 chat-input' placeholder='message'
-
-                ref={textAreaRef}
-                onChange={handleChange}
-                rows={1}
-                value={message}
-              >
-              </textarea >
-              <div style={{ width: "10%" }}>
-                <Send size={16} color="#6f5cc4" onClick={sendMessage} style={{ cursor: 'pointer' }} />
-
-              </div>
+          <ChatBody currentChat={currentChat} socket={socket} />
 
 
-            </CardFooter>
-
-
-
-          </Card>
         </Col>
       </Row>
 

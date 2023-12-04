@@ -1,24 +1,64 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
 import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, Row, Col, NavItem } from 'reactstrap'
 import brand from "../assets/img/brand.jpg"
 import "../css/topHeader.css"
 import { Bell, MoreVertical, Smile } from 'react-feather'
-import io from "socket.io-client"
 import { baseUrl } from '../helpers/request'
 import { useSelector } from 'react-redux'
+import { SocketContext } from '../SocketContext'
 
 export default function TopHeaders() {
 
     const [isOpen, setisOpen] = useState(true)
     const user = useSelector(state => state.auth.user);
+    const socket = useContext(SocketContext);
 
     const toggle = () => {
         setisOpen(!isOpen)
     }
 
-    const socket = io("http://localhost:4200");
 
-   
+    useEffect(() => {
+
+        console.log('socket current', socket);
+
+        const socketConnect = () => {
+            socket.on('connect', () => {
+                console.log('socket is connected',);
+            });
+        }
+
+        socketConnect()
+
+
+
+        socket.on('disconnect', () => {
+            console.log('socket is disconnected', socket);
+        })
+
+        const reconnectSocket = () => {
+
+            if (!socket.connected) {
+
+                socketConnect()
+            }
+
+        }
+
+
+        const reconnectInterval = setInterval(reconnectSocket, 15000)
+
+        return () => {
+            socket.disconnect();
+            clearInterval(reconnectInterval)
+        }
+
+    }, [socket])
+
+
+
+
+
     return (
         <Fragment>
 

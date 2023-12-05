@@ -92,7 +92,7 @@ async function createIfNotExist(req) {
 
     }
     catch (err) {
-        throw err
+        throw "Not_found"
     }
 }
 
@@ -102,7 +102,7 @@ async function getByUser(id) {
         return await Conversation.find({participants : id})
     }
     catch (err) {
-        return err
+        throw "Not_found";
     }
 }
 

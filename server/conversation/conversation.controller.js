@@ -59,12 +59,16 @@ async function createIfNotExist(req, res, next) {
 
 async function getByUser(req, res, next) {
     console.log("this is running")
-    console.log("req.query.id",req.query.id)
+    console.log("req.query.id", req.query.id)
     service.getByUser(req.query.id)
         .then(response => {
+
+            console.log("response in controller", response)
             resHandler.getSuccess(res, response)
         })
         .catch(err => {
-            resHandler.getSuccess(res, err)
+            console.log("response in controller error", err)
+            
+            resHandler.errorResponse(res, err)
         })
 }

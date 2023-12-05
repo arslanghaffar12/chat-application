@@ -15,7 +15,7 @@ import ChatBody from '../components/ChatBody'
 export default function Home() {
 
 
-  const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {} });
+  const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {}, isTyping: {status : false, text : ''} });
   const currentChatRef = useRef(currentChat);
   console.log('currentChatRef==', currentChatRef);
   const [cnv_id, setCnv_id] = useState('')
@@ -35,11 +35,11 @@ export default function Home() {
   const fetchConservationIds = async () => {
 
     const response = await getConservationByUser({ _id: user._id, dispatch });
-
-    if (response.status) {
+    console.log('response===',response);
+    if (response.status && 'data' in response) {
       const payload = {
         data: {
-          cnv_ids: response.data.map((item) => { return item._id }),
+          cnv_ids: response?.data?.map((item) => { return item._id }),
           user_id: user._id
         }
       }
@@ -54,7 +54,7 @@ export default function Home() {
 
   const handleChatClick = (item) => {
     setCnv_id(item.conversationId);
-    setCurrentChat(item)
+    setCurrentChat({...item, isTyping : {status : false, text : ''}})
   }
 
 
@@ -131,13 +131,22 @@ export default function Home() {
 
     socket.on('message', (message) => {
       console.log('message is recieing', message);
- 
+
       setCurrentChat((prevChat) => {
         const updatedChat = { ...prevChat };
         updatedChat.messages = [...prevChat.messages, message];
         return updatedChat;
       });
 
+    })
+
+    socket.on('isChatting', (message) => {
+
+      setCurrentChat((prevChat) => {
+        const updatedChat = { ...prevChat };
+        updatedChat.isTyping = message.isTyping;
+        return updatedChat
+      })
     })
 
   }, [socket])
@@ -172,6 +181,7 @@ export default function Home() {
 
 
 
+  const chatBodyRef = useRef(null);
 
 
   return (
@@ -208,7 +218,7 @@ export default function Home() {
           </Card>
         </Col>
         <Col md={8} className='p-0 m-0'>
-          <ChatBody currentChat={currentChat} socket={socket} />
+          <ChatBody currentChat={currentChat} socket={socket} ref={chatBodyRef}/>
 
 
         </Col>

@@ -80,6 +80,11 @@ sio.on('connection', function (socket) {
     })
 
 
+    socket.on('isChatting', async (messageData) => {
+        socket.to(messageData.conversationId).emit('isChatting', messageData)
+    })
+
+
     socket.on('message', async (messageData) => {
 
         // Save message to the database if needed

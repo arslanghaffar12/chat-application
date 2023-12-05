@@ -117,3 +117,9 @@
     box-shadow: 0 0 5px var(--primary-dark);
     /* Example box shadow on focus */
 }
+
+.typing-indicator {
+    color: #888;  /* Use a color that suits your design */
+    font-size: 12px;
+    margin: 4px 0 0;  /* Adjust the margin as needed */
+  }

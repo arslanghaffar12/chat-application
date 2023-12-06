@@ -78,6 +78,19 @@ code {
   -bs-btn-focus-shadow-rgb: none !important
 }
 
+.btn-primary-dark,
+.btn-outline-primary.active,
+.btn-outline-primary:hover {
+  border-color: var(--primary-dark) !important;
+  background-color: var(--primary-dark) !important;
+  color: var(--white) !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  font-family: sans-serif;
+  --bs-btn-focus-shadow-rgb: none !important;
+  -bs-btn-focus-shadow-rgb: none !important
+}
+
 /* .container {
   background-color: #2a2739;
   margin: 0 !important;
@@ -371,4 +384,56 @@ input[type="password"] {
   width: 98%;
   /* background-color: #c7ccd5; */
   /* Any other styling changes you want when scrolled */
+}
+
+
+h4 {
+  color: var(--primary-text) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+label {
+  color: var(--primary-text) !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;  
+}
+
+.button-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.full-width-button {
+  flex: 1;
+  margin: 8px;
+  /* Adjust margin as needed */
+}
+
+/* .btn-secondary {
+  border-color: var(--secondary) !important;
+  background-color: var(--secondary) !important;
+  color: var(--white) !important;
+  font-size: 12px !important;
+} */
+
+.cancel {
+  border-color: var(--secondary) !important;
+  background-color: var(--secondary) !important;
+  color: var(--white) !important;
+  font-size: 12px !important;
+}
+
+.cursor-pointer{
+  cursor: pointer;
+}
+
+.deleteButton {
+  border-color: var(--danger) !important;
+
+}
+
+.deleteButton:hover {
+  background-color: var(--danger) !important;
+  color: #fff !important;
 }

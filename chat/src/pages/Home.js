@@ -153,37 +153,6 @@ export default function Home() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const chatBodyRef = useRef(null);
-
-
   return (
     <div className='m-3'>
       <h1 className="heading">Chat</h1>
@@ -218,7 +187,7 @@ export default function Home() {
           </Card>
         </Col>
         <Col md={8} className='p-0 m-0'>
-          <ChatBody currentChat={currentChat} socket={socket} ref={chatBodyRef}/>
+          <ChatBody currentChat={currentChat} socket={socket} />
 
 
         </Col>

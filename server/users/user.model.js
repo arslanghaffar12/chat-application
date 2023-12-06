@@ -6,6 +6,9 @@ const schema = new Schema({
     email: { type: String, required: true },
     password_hash: { type: String, required: true },
     image: { type: String },
+    contact: { type: String, required: false, default: '' },
+    status: { type: Number, required: false },
+    role: { type: Number, required: false },
 
 }, { timestamps: { createdAt: 'created_at' } }
 )

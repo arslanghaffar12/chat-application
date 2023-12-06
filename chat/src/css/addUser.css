@@ -1,0 +1,85 @@
+:root {
+
+    --primary-dark: #504190;
+    --primary: #6f5cc4;
+    --primary-text: #969fb0;
+    --primary-text-light: #c6cbd4;
+    --primary-text-dark: #334666;
+
+}
+
+.input {
+    border-radius: 4px !important;
+    border-color: var(--primary-text-light) !important;
+    height: 37px !important;
+    outline: none;
+    /* color: var(--primary) !important; */
+}
+
+.input:focus {
+    outline: none !important;
+    /* Set your desired color or style */
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.05rem var(--primary-dark) !important;
+    color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.custom-select {
+    height: 40px;
+}
+
+
+.css-13cymwt-control {
+    height: 37px !important;
+}
+
+.css-1fdsijx-ValueContainer {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    height: 37px !important;
+    -webkit-flex-wrap: unset !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+
+}
+
+.css-1nmdiq5-menu {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+.css-t3ipsp-control {
+    box-shadow: 0 0 0 0.05rem var(--primary-dark) !important;
+    color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.take-image {
+    width : 100px;
+    height: 200px;
+
+}
+
+/* .ant-upload-select{
+    width: 120px !important;
+    height: 140px !important;
+
+} */
+
+.ant-upload-list-item{
+    box-shadow: 0 0 0 0.05rem var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.ant-upload-list {
+    color: var(--primary-dark) !important;
+}
+
+/* .ant-upload-list-item-container {
+    width: 120px !important;
+    height: 140px !important;
+} */

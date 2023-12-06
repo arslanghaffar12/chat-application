@@ -93,7 +93,7 @@ export const getByCvnIdsRequest = async (requestData) => {
 
     var response = await axios({
         method: 'POST',
-        data : requestData.data,
+        data: requestData.data,
         url: `${baseUrl}chat/getByCoversationIds`,
         headers: {
             "Content-Type": "application/json",
@@ -113,8 +113,89 @@ export const postMessageRequest = async (requestData) => {
 
     var response = await axios({
         method: 'POST',
-        data : requestData.data,
+        data: requestData.data,
         url: `${baseUrl}chat/insert`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+
+
+
+export const addUserRequest = async (requestData) => {
+
+    var response = await axios({
+        method: 'POST',
+        data: requestData.data,
+        url: `${baseUrl}users/create`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+
+export const deleteUserRequest = async (requestData) => {
+
+    var response = await axios({
+        method: 'DELETE',
+        url: `${baseUrl}users/${requestData._id}`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+
+export const userUpdateRequest = async (requestData) => {
+
+    var response = await axios({
+        method: 'PUT',
+        url: `${baseUrl}users/${requestData.params._id}`,
+        data: requestData.data,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+
+export const updatePassword = async (requestData) => {
+    console.log('requestData',requestData);
+    var response = await axios({
+        method: 'put',
+        data: requestData.data,
+        url: `${baseUrl}users/updatePassword`,
         headers: {
             "Content-Type": "application/json",
             // "Authorization": "Bearer " + user.token,

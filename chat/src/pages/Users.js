@@ -2,20 +2,25 @@ import React, { useEffect, useState } from 'react'
 import { Button, ButtonGroup, Card, Col, Container, Row, Table } from 'reactstrap';
 import "../css/users.css"
 import brand from "../assets/img/brand.jpg"
-import { Filter } from 'react-feather';
+import { Delete, Edit, Filter } from 'react-feather';
 import { useDispatch, useSelector } from 'react-redux';
-import { usersRequest } from '../helpers/request';
+import { deleteUserRequest, usersRequest } from '../helpers/request';
+import { Link } from 'react-router-dom';
+import DeleteModal from '../modal/DeleteModal';
 
 export default function Users() {
 
 
     const users = useSelector(state => state.users.users);
+    const [usersToShow, setUsersToShow] = useState([]);
+    const [modal, setModal] = useState(false);
+    const [currentUser, setCurrentUser] = useState()
 
 
     const colors = {
         primaryDark: "#504190",
         primary: "#6f5cc4",
-        primaryText : "#969fb0",
+        primaryText: "#969fb0",
         primaryTextDark: "#334666",
 
 
@@ -40,37 +45,38 @@ export default function Users() {
         };
     };
 
-    const Data = [
-        { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-        { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-        { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
-    
-        { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-        { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-        { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
-        
-        { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-        { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-        { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
-        
-        { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-        { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-        { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
-        
-        { id: 1, photo: brand, memberName: 'John Doe', mobile: '123-456-7890', email: 'johndoe@email.com', status: 'Active', operation: 'Edit' },
-        { id: 2, photo: brand, memberName: 'Jane Smith', mobile: '987-654-3210', email: 'janesmith@email.com', status: 'Inactive', operation: 'Delete' },
-        { id: 3, photo: brand, memberName: 'Peter Jones', mobile: '555-123-4567', email: 'peterjones@email.com', status: 'Pending', operation: 'View' },
-    ]
+
 
     const dispatch = useDispatch()
 
     const fetchUsers = async () => {
-        await usersRequest({dispatch})
+        await usersRequest({ dispatch })
 
     }
 
 
-    useEffect(  () => {
+    const deleteUser = async (id) => {
+
+        const response = await deleteUserRequest({ _id: id });
+        console.log('response of Delete', response);
+        if (response.status) {
+            fetchUsers()
+        }
+
+    }
+
+
+    useEffect(() => {
+        if (users) {
+            let currentToShow = currentView === 'member' ? 0 : 1
+            let _usersToShow = users.filter((item) => { return item.role === currentToShow });
+            setUsersToShow(_usersToShow)
+        }
+
+    }, [users, currentView])
+
+
+    useEffect(() => {
         fetchUsers()
 
     }, [])
@@ -96,7 +102,7 @@ export default function Users() {
                 <Col md={7}>
                 </Col>
                 <Col md={3} className='totalStatus'>
-                    <span>Total member : 2000</span>
+                    <span>Total {currentView} : {usersToShow.length}</span>
                     <span>Total member : 2000</span>
 
                 </Col>
@@ -108,7 +114,7 @@ export default function Users() {
 
             <Row className='my-4' style={{ backgroundColor: "" }}>
                 <Col md={2}>
-                    <Button className='btn-primary'>  {`Add new ${currentView}`}</Button>
+                    <Link to={'/add-member'}><Button className='btn-primary'>  {`Add new ${currentView}`}</Button></Link>
                 </Col>
 
                 <Col md={8}>
@@ -135,20 +141,30 @@ export default function Users() {
                         </tr>
                     </thead>
                     <tbody>
-                        {users?.map((data) => (
+                        {usersToShow?.map((data) => (
                             <tr key={data.id} className="bg-white">
-                                <td className=""><img src={data.photo} alt={data.name} style={{ width: '50px', height: '50px' }} /></td>
+                                <td className=""><img src={data.image} alt={data.name} style={{ width: '50px', height: '50px', borderRadius: '50%' }} /></td>
                                 <td className="">{data.name}</td>
-                                <td className="">{data.mobile}</td>
+                                <td className="">{data.contact}</td>
                                 <td className="">{data.email}</td>
-                                <td className="">{data.status}</td>
-                                <td className="text-center">{data.operation}</td>
+                                <td className="">{data.status == 1 ? 'Active' : 'InActive'}</td>
+                                <td className="text-center">
+
+                                    <Delete size={14} color='#504190' className='cursor-pointer' onClick={() => { setCurrentUser(data); setModal(true) }} />
+                                    <Edit className='mx-2 cursor-pointer' size={14}  color='#504190' />
+
+
+
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </Table>
 
             </Card>
+
+            {(currentUser !== undefined && modal) && <DeleteModal modal={modal} setModal={(output) => setModal(output)} delete={() => deleteUser(currentUser._id)} />}
+
 
 
         </div>

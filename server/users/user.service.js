@@ -7,7 +7,9 @@ module.exports = {
     getAll,
     create,
     authenticate,
-    update
+    update,
+    deleteUser,
+    updatePassword
 }
 
 
@@ -28,7 +30,7 @@ async function authenticate(req) {
 
             }, 'mySecret', { expiresIn: '5d' })
 
-            let _user = { ...isExist.toJSON(), token: token , login : true}
+            let _user = { ...isExist.toJSON(), token: token, login: true }
 
             return _user
         }
@@ -73,19 +75,52 @@ async function update(id, body) {
 
     let isExist = await User.findById(id);
 
-    if(!isExist){
+    if (!isExist) {
         throw 'user not exist'
     }
 
-    if(isExist.email !== body.email && await User.findOne({email : body.email})){
+    if (isExist.email !== body.email && await User.findOne({ email: body.email })) {
         throw "already_existed"
     }
 
-    if(body.password){
+    if (body.password) {
         isExist.password_hash = bycrypt.hashSync(body.password, 10);
     }
 
     Object.assign(isExist, body);
     await isExist.save();
-    return await User.findOne({_id : id})
+    return await User.findOne({ _id: id })
+}
+
+async function deleteUser(id) {
+    try {
+        return await User.deleteOne({ _id: id })
+
+    } catch (e) {
+        throw 'Not_found';
+    }
+
+}
+
+async function updatePassword(id, request_param) {
+    // id = new mongoose.Types.ObjectId(id)
+    let user_found = await User.findById({ _id: id });
+
+    if (!user_found)
+        throw 'not found';
+
+    if (bycrypt.compareSync(request_param.oldPassword, user_found.password_hash)) {
+
+        if (request_param.newPassword) {
+            let newPassword = bycrypt.hashSync(request_param.newPassword, 10);
+
+            return await User.updateOne({
+                _id: id
+            }, {
+                $set: { password_hash: newPassword }
+            });
+        }
+    } else
+        throw 'wrong_password';
+
 }

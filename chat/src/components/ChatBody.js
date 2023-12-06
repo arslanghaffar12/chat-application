@@ -87,16 +87,7 @@ export default function ChatBody({ currentChat, socket }) {
         }
     };
 
-    const scrollToBottom = () => {
-        console.log("chatBodyRef===", chatBodyRef.current)
-        const el = document.getElementById('style-3');
-        if (el) {
-            el.scrollTop = el.scrollHeight;
-        }
-        console.log('el===', el.scrollTop, el.scrollHeight);
-        if (!chatBodyRef.current) return;
 
-    };
 
     useEffect(() => {
         // Set a timer to consider someone still typing after a certain delay
@@ -111,10 +102,11 @@ export default function ChatBody({ currentChat, socket }) {
 
         // Clear the timer if the component unmounts or if the user continues typing
         return () => clearTimeout(typingTimeout);
-    }, [message,]);
+    }, [message]);
 
     useEffect(() => {
-        scrollToBottom();
+
+        chatBodyRef.current?.scrollIntoView({ behavior: 'smooth' });
 
     }, [currentChat])
 
@@ -133,15 +125,16 @@ export default function ChatBody({ currentChat, socket }) {
                     </Col>
                 </Row>
             </CardHeader>
-            <CardBody   className='chat-container scrollbar p-2' id='style-3' >
-                    {currentChat.messages.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => (
-                        <div
-                            key={index}
-                            className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
-                        >
-                            <div className="message-content">{message.content}</div>
-                        </div>
-                    ))}
+            <CardBody className='chat-container scrollbar p-2' id='style-3' >
+                {currentChat.messages.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => (
+                    <div
+                        key={index}
+                        className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
+                    >
+                        <div className="message-content">{message.content}</div>
+                    </div>
+                ))}
+                <div ref={chatBodyRef}></div>
 
             </CardBody>
             <CardFooter className='chat-footer totalCenter p-2'>

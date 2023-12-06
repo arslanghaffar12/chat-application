@@ -7,6 +7,8 @@ import Home from './pages/Home';
 import Users from './pages/Users';
 import Layout from './components/Layout';
 import { SocketProvider } from './SocketContext';
+import AddUser from './pages/user/AddUser';
+import Profile from './pages/Profile';
 
 // helping out to push
 
@@ -17,8 +19,11 @@ function App() {
         <Routes>
           <Route path='/login' element={<Login />} />
           <Route path='/' element={<Authenticate><Layout /></Authenticate>}  >
-            <Route index element={<Home />} />
+            <Route index element={<Profile />} />
+            <Route path='/chat' element={<Home />} />
             <Route path='/users' element={<Users />} />
+            <Route path='/add-member' element={<AddUser />} />
+
 
           </Route>
         </Routes>

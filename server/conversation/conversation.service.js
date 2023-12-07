@@ -96,46 +96,88 @@ async function createIfNotExist(req) {
     }
 }
 
-async function getByUser(id) {
+async function getByUser(userId) {
 
     try {
-        let cvnIds = await Conversation.find({ participants: id });
+        let cvnIds = await Conversation.find({ participants: userId });
 
 
 
-            const conversations = await Conversation.aggregate([
-                { $match: { participants: userId } },
-                {
-                    $project: {
-                        _id: 1,
-                        participants: 1,
-                        timestamp:1
-                    }
+        const conversations = await Conversation.aggregate([
+            { $match: { participants: userId } },
+            {
+              $project: {
+                _id: 1,
+                participants: 1,
+                timestamp: 1,
+                participantsDetails: {
+                  $map: {
+                    input: "$participants",
+                    as: "participantId",
+                    in: {
+                      $let: {
+                        vars: { participantDetails: { $toObjectId: "$$participantId" } },
+                        in: {
+                          $first: {
+                            $filter: {
+                              input: "$participantsDetails",
+                              as: "participantDetail",
+                              cond: {
+                                $eq: ["$$participantDetail._id", "$$participantDetails"],
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
-                {
-                    $unwind: "$participants"
-                },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "participants",
-                        foreignField: "_id",
-                        as: "participantDetails"
-                    }
-                },
-                {
-                    $group: {
-                        _id: "$_id",
-                        participants: { $push: "$participantDetails" }
-                    }
-                }
-            ]).toArray();
+              },
+            },
+            {
+              $unwind: "$participants",
+            },
+            {
+              $match: { participants: { $ne: userId } },
+            },
+            {
+              $lookup: {
+                from: "users",
+                let: { participantId: { $toObjectId: "$participants" } },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $eq: ["$_id", "$$participantId"],
+                      },
+                    },
+                  },
+                ],
+                as: "participantsDetails",
+              },
+            },
+            {
+              $unwind: "$participantsDetails",
+            },
+            {
+              $group: {
+                _id: "$_id",
+                participants: { $push: "$participants" },
+                timestamp: { $first: "$timestamp" },
+                participantsDetails: { $push: "$participantsDetails" },
+              },
+            },
+          ]);
 
-            console.log("cvnIds===", conversations)
-            return conversations
-        }
-        catch (err) {
-            throw "Not_found";
-        }
+
+        // Now conversations should contain details for participants other than the current user
+
+
+        console.log("cvnIds===", conversations)
+        return conversations
     }
+    catch (err) {
+        throw "Not_found";
+    }
+}
 

@@ -9,7 +9,7 @@ export default function Sidebar() {
     const menu = [
         { title: 'Profile', icon: <User size={15} color={iconColor} />, to: "/" },
         { title: 'Users', icon: <Users size={15} color={iconColor} />, to: "/users" },
-        { title: 'Chat', icon: <User size={15} color={iconColor} />, to: "/" },
+        { title: 'Chat', icon: <User size={15} color={iconColor} />, to: "/chat" },
         { title: 'Profile', icon: <User size={15} color={iconColor} />, to: "/" },
 
     ]

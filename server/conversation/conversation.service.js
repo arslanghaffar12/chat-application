@@ -76,16 +76,16 @@ async function createIfNotExist(req) {
     try {
 
         let participants = req.body.participants;
-        console.log("participants are",participants)
+        console.log("participants are", participants)
 
         let isExist = await Conversation.find({ participants: participants })
-        console.log("participants are exist",isExist)
+        console.log("participants are exist", isExist)
 
-        if(isExist && isExist.length > 0){
+        if (isExist && isExist.length > 0) {
             return isExist
         }
 
-        let _conversation = new Conversation({participants: participants});
+        let _conversation = new Conversation({ participants: participants });
         _conversation.save();
 
         return _conversation
@@ -99,10 +99,43 @@ async function createIfNotExist(req) {
 async function getByUser(id) {
 
     try {
-        return await Conversation.find({participants : id})
+        let cvnIds = await Conversation.find({ participants: id });
+
+
+
+            const conversations = await Conversation.aggregate([
+                { $match: { participants: userId } },
+                {
+                    $project: {
+                        _id: 1,
+                        participants: 1,
+                        timestamp:1
+                    }
+                },
+                {
+                    $unwind: "$participants"
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "participants",
+                        foreignField: "_id",
+                        as: "participantDetails"
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$_id",
+                        participants: { $push: "$participantDetails" }
+                    }
+                }
+            ]).toArray();
+
+            console.log("cvnIds===", conversations)
+            return conversations
+        }
+        catch (err) {
+            throw "Not_found";
+        }
     }
-    catch (err) {
-        throw "Not_found";
-    }
-}
 

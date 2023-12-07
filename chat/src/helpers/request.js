@@ -209,3 +209,24 @@ export const updatePassword = async (requestData) => {
     return data
 
 }
+
+export const conversationIdRequest = async (requestData) => {
+    console.log('requestData',requestData);
+    var response = await axios({
+        method: 'POST',
+        data: requestData.data,
+        url: `${baseUrl}conversation/createIfNotExist`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+

@@ -93,7 +93,7 @@ sio.on('connection', function (socket) {
 
         //    await  postMessage(messageData)
         // Emit the message to the conversation room
-        socket.nsp.to(messageData.conversationId).emit('message', messageData);
+        socket.in(messageData.conversationId).emit('message', messageData);
 
         console.error('messageData is', messageData);
 

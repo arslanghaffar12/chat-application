@@ -167,7 +167,7 @@ export default function ChatBody({ socket, curCnv }) {
 
         socket.on('message', (message) => {
 
-            console.log('message received', member.conversationId, message.conversationId, member.conversationId === message.conversationId, message);
+            console.log('message received', "member", member.conversationId, 'message', message.conversationId, member.conversationId === message.conversationId, message);
 
             if (member.conversationId === message.conversationId) {
 

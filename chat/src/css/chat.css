@@ -170,3 +170,33 @@
 .new-chat {
     padding-top: 2.5rem;
 }
+
+.first-text {
+    margin: unset;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--primary-text);
+}
+
+.first-text-div {
+    line-height: 17px;
+    padding: 0;
+    padding-top: 1px;
+    align-items: center;
+}
+
+.unread {   
+    align-items: center;
+    height: 14px;
+    width: 14px;
+    padding: 0;
+    font-size: 11px;
+    font-weight: 500;
+    background-color: var(--primary-dark);
+    border-radius: 50%;
+    margin-left: auto;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    color: white;
+}

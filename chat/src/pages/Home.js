@@ -17,6 +17,10 @@ export default function Home() {
 
 
   const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {}, isTyping: { status: false, text: '' } });
+  const conversations = useSelector((state) => state.conversation.conversations);
+  
+  const [curCnv, setCurCnv] = useState()
+  console.log('curCnv ', curCnv);
   const [cnv_id, setCnv_id] = useState('')
   const socket = useContext(SocketContext);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -30,33 +34,21 @@ export default function Home() {
   const users = useSelector(state => state.users.users);
   const [usersToShow, setUsersToShow] = useState([]);
   console.log('usersToShow==', usersToShow);
-  console.log('currentChat', currentChat);
 
 
 
-  const fetchConservationIds = async () => {
+  const fetchConservation = async () => {
 
     const response = await getConservationByUser({ _id: user._id, dispatch });
-    console.log('response===', response);
-    if (response.status && 'data' in response) {
-      const payload = {
-        data: {
-          cnv_ids: response?.data?.map((item) => { return item._id }),
-          user_id: user._id
-        }
-      }
-      const _allChats = await getByCvnIdsRequest(payload);
-      if (_allChats.status) {
-        setAllChats(_allChats.data)
-      }
-    }
+
 
   }
 
 
   const handleChatClick = (item) => {
-    setCnv_id(item.conversationId);
-    setCurrentChat({ ...item, isTyping: { status: false, text: '' } })
+    setCurCnv(item)
+    // setCnv_id(item.conversationId);
+    // setCurrentChat({ ...item, isTyping: { status: false, text: '' } })
   }
 
   const handleNewChatClick = async (item) => {
@@ -167,46 +159,49 @@ export default function Home() {
 
 
   useEffect(() => {
-    fetchConservationIds()
+    fetchConservation()
     fetchUsers()
   }, [])
 
   useEffect(() => {
-    if (cnv_id) {
-      socket.emit("joinRoom", { conversationId: currentChat.conversationId, user: user });
+    if (curCnv) {
+      console.log('hello brother', curCnv);
+      socket.emit("joinRoom", { conversationId: curCnv.conversationId, user: user });
 
 
     }
 
-  }, [cnv_id])
+  }, [curCnv])
 
 
 
 
-  useEffect(() => {
+  // useEffect(() => {
 
 
-    socket.on('message', (message) => {
-      console.log('message is recieing', message);
+  //   socket.on('message', (message) => {
+  //     console.log('message is recieing', message);
 
-      setCurrentChat((prevChat) => {
-        const updatedChat = { ...prevChat };
-        updatedChat.messages = [...prevChat.messages, message];
-        return updatedChat;
-      });
+  //     setCurrentChat((prevChat) => {
+  //       const updatedChat = { ...prevChat };
+  //       updatedChat.messages = [...prevChat.messages, message];
+  //       return updatedChat;
+  //     });
 
-    })
+  //   })
 
-    socket.on('isChatting', (message) => {
+  //   socket.on('isChatting', (message) => {
 
-      setCurrentChat((prevChat) => {
-        const updatedChat = { ...prevChat };
-        updatedChat.isTyping = message.isTyping;
-        return updatedChat
-      })
-    })
+  //     console.log('isChattign is recieving', message);
 
-  }, [socket])
+  //     // setCurrentChat((prevChat) => {
+  //     //   const updatedChat = { ...prevChat };
+  //     //   updatedChat.isTyping = message.isTyping;
+  //     //   return updatedChat
+  //     // })
+  //   })
+
+  // }, [socket])
 
 
   useEffect(() => {
@@ -254,14 +249,28 @@ export default function Home() {
                 <div className='m-0 p-0' id='chat'>
 
                   <div className={`m-3 ${isScrolled ? 'scrolled' : ''}`} id="style-3" style={{ width: "100%", overflowY: "auto", cursor: "pointer" }}>
-                    {allChats?.map((item, ind) => (
-                      <div key={ind} className='d-flex align-items-center border-bottom py-2' onClick={() => handleChatClick(item)}>
-                        <img src={item.userDetails.image} alt={item.name} style={{ width: '50px', height: '50px' }} className="rounded-circle me-3" />
-                        <div className='d-flex flex-column'>
-                          <h4 className='user-name'>{item.userDetails.name}</h4>
+                    {conversations?.map((item, ind) => {
+
+                      let user = item.members.length > 0 ? item.members[0] : {};
+                      let latestMessage = item.sortedMessages.length > 0 ? item.sortedMessages[0] : {}
+
+
+                      return (
+                        <div key={ind} className='d-flex align-items-center border-bottom py-2' style={{ width: "92%" }} onClick={() => handleChatClick(item)}>
+                          <img src={user.image} alt={user.name} style={{ width: '50px', height: '50px' }} className="rounded-circle me-3" />
+                          <div className='d-flex flex-column' style={{ width: "100%" }} >
+                            <h4 className='user-name'>{user.name}</h4>
+                            <div className='d-flex m-0 first-text-div'>
+                              <p className='first-text'>{latestMessage.content}</p>
+                              <div className='unread'>
+                                <span>{item.unread}</span>
+                              </div>
+
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
 
@@ -294,7 +303,7 @@ export default function Home() {
           </Card>
         </Col>
         <Col md={8} className='p-0 m-0'>
-          <ChatBody currentChat={currentChat} socket={socket} />
+          <ChatBody socket={socket} curCnv={curCnv} />
 
 
         </Col>

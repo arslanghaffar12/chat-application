@@ -90,6 +90,35 @@ async function getByCoversationIds(requestData) {
                     messages: { $push: '$$ROOT' },
                 },
             },
+
+        ]);
+
+
+
+        return result;
+    } catch (error) {
+        throw 'not found';
+    }
+}
+
+async function getByCoversationIdsOld(requestData) {
+    console.log("requestData in ", requestData);
+
+    // let all_ids = requestData.cnv_ids;
+    try {
+
+        let all_ids = requestData.cnv_ids.map(id => new mongoose.Types.ObjectId(id));
+        console.log("all_ids", all_ids)
+        const result = await Chat.aggregate([
+            {
+                $match: { conversationId: { $in: all_ids } },
+            },
+            {
+                $group: {
+                    _id: '$conversationId',
+                    messages: { $push: '$$ROOT' },
+                },
+            },
             {
                 $addFields: {
                     firstMessage: {

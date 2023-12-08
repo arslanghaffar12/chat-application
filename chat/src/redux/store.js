@@ -2,10 +2,12 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { authreducer} from "./reducers/auth"
 import { actionTypes } from './constants/action-types';
 import { userReducer } from './reducers/user';
+import { conversationReducer } from './reducers/chat';
 
 const combinedReducer = combineReducers({
   auth : authreducer,
-  users : userReducer
+  users : userReducer,
+  conversation : conversationReducer
 });
 
 console.log("combinedReducer",combinedReducer)

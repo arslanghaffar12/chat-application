@@ -81,7 +81,8 @@ sio.on('connection', function (socket) {
 
 
     socket.on('isChatting', async (messageData) => {
-        socket.to(messageData.conversationId).emit('isChatting', messageData)
+        console.log('isChatting is recieing', messageData);
+        socket.broadcast.to(messageData.conversationId).emit('isChatting', messageData)
     })
 
 

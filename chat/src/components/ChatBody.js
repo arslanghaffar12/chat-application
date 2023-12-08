@@ -3,13 +3,34 @@ import "../css/chat.css"
 import { Card, CardBody, CardFooter, CardHeader, Col, Row } from 'reactstrap'
 import useAutosizeTextArea from '../hooks/useAutoSizeTextArea'
 import { Bell, MoreVertical, Smile, Send } from 'react-feather'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import useChatScroll from '../hooks/useChatScroll'
+import { getByCvnIdsRequest } from '../helpers/request'
+import { setConversations } from '../redux/actions/chat'
 
-export default function ChatBody({ currentChat, socket }) {
+export default function ChatBody({ socket, curCnv }) {
 
+    const conversations = useSelector((state) => state.conversation.conversations);
+    const dispatch = useDispatch()
+
+
+    console.log('curCnv===', curCnv);
+    let _member = {
+        receiver: {},
+        messages: [],
+        conversationId: '',
+        isTyping: { status: false, text: '' },
+        unread: 0
+
+
+    }
     const user = useSelector(state => state.auth.user);
-    const chatBodyRef = useRef(currentChat);
+    const [member, setMember] = useState(_member);
+    console.log('member==', member);
+    const [currentChat, setCurrentChat] = useState()
+    console.log('currentChat===', currentChat);
+
+    const chatBodyRef = useRef(member);
 
     const [message, setMessage] = useState()
     const textAreaRef = useRef()
@@ -27,18 +48,19 @@ export default function ChatBody({ currentChat, socket }) {
 
         let payload = {
             data: {
-                conversationId: currentChat.conversationId,
+                conversationId: member.conversationId,
                 content: message,
                 senderId: user._id,
                 senderName: user.name,
-                recipientId: currentChat.userDetails._id,
-                recipientName: currentChat.userDetails.name
+                recipientId: member.receiver._id,
+                recipientName: member.receiver.name
             }
         };
         console.log('payload', payload.data);
 
 
         socket.emit('message', payload.data)
+        setMessage()
 
 
     }
@@ -50,12 +72,12 @@ export default function ChatBody({ currentChat, socket }) {
 
         let payload = {
             data: {
-                conversationId: currentChat.conversationId,
+                conversationId: member.conversationId,
                 content: message,
                 senderId: user._id,
                 senderName: user.name,
-                recipientId: currentChat.userDetails._id,
-                recipientName: currentChat.userDetails.name,
+                recipientId: member.receiver._id,
+                recipientName: member.receiver.name,
                 isTyping: { text: `${user.name} is typing`, status: _status }
             }
         };
@@ -63,20 +85,6 @@ export default function ChatBody({ currentChat, socket }) {
         socket.emit('isChatting', payload.data)
     }
 
-    const handleFocus = () => {
-        setIsTyping(true);
-        isChattingRequest(true)
-
-
-
-
-    };
-
-    const handleBlur = () => {
-        setIsTyping(false);
-        isChattingRequest(false)
-
-    };
 
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -87,28 +95,136 @@ export default function ChatBody({ currentChat, socket }) {
         }
     };
 
+    const fetchChat = async ({ id, _curCnv }) => {
+        let payload = {
+            data: {
+                cnv_ids: [id],
+            }
+
+        }
+
+        let chat = await getByCvnIdsRequest(payload);
+        let _member = { ..._curCnv, receiver: _curCnv.members[0], }
+
+        if (chat.status) {
+            _member = { ..._member, messages: chat.data.length > 0 ? chat.data[0].messages : [] }
+        }
+
+        setMember(_member)
+
+
+
+    }
+
 
 
     useEffect(() => {
         // Set a timer to consider someone still typing after a certain delay
-        const typingTimeout = setTimeout(() => {
-            setIsTyping(false);
-            isChattingRequest(false)
+
+        if (typeof member !== undefined && member && member.receiver) {
+            const typingTimeout = setTimeout(() => {
+                setIsTyping(false);
+                isChattingRequest(false)
 
 
-        }, 2000); // Adjust the delay as needed
+            }, 2000); // Adjust the delay as needed
 
-        isChattingRequest(true)
+            isChattingRequest(true)
 
-        // Clear the timer if the component unmounts or if the user continues typing
-        return () => clearTimeout(typingTimeout);
+            return () => clearTimeout(typingTimeout);
+
+        }
+
+
+
     }, [message]);
+
+
+
 
     useEffect(() => {
 
-        chatBodyRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (curCnv && curCnv.members.length > 0) {
 
-    }, [currentChat])
+            fetchChat({ id: curCnv.conversationId, _curCnv: curCnv });
+
+        }
+        return () => {
+
+        }
+
+
+    }, [curCnv])
+
+
+    useEffect(() => {
+        chatBodyRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [member])
+
+
+    useEffect(() => {
+
+
+        socket.on('message', (message) => {
+
+            console.log('message received', member.conversationId, message.conversationId, member.conversationId === message.conversationId, message);
+
+            if (member.conversationId === message.conversationId) {
+
+                console.log('message received inside', member.conversationId === message.conversationId, message);
+                setMember((prevMember) => {
+                    const _member = { ...prevMember };
+                    _member.messages = [..._member.messages, message];
+                    return _member
+                })
+            }
+            else {
+                const index = conversations.findIndex(item => item.conversationId === message.conversationId);
+
+                if (index !== -1) {
+                    const updatedConversation = {
+                        ...conversations[index],
+                        sortedMessages: [...conversations[index].sortedMessages, message].sort((a, b) => a.timestamp - b.timestamp),
+                    };
+                    console.log('updatedConversation', updatedConversation);
+                    const updatedConversations = [...conversations];
+                    updatedConversations[index] = updatedConversation;
+                    console.log('updatedConversations==',updatedConversations);
+                    dispatch(setConversations(updatedConversations))
+
+                }
+
+
+
+
+            }
+
+
+
+
+
+
+
+        })
+
+        socket.on('isChatting', (message) => {
+
+            if (member.conversationId === message.conversationId) {
+                setMember((prevMember) => {
+                    const _member = { ...prevMember };
+                    _member.isTyping = message.isTyping;
+                    return _member
+                })
+
+            }
+
+
+
+
+        })
+
+    }, [socket])
+
 
 
     return (
@@ -116,17 +232,16 @@ export default function ChatBody({ currentChat, socket }) {
             <CardHeader className='chat-header'>
                 <Row>
                     <Col className='totalCenter'>
-                        <img src={currentChat.userDetails.image} alt={currentChat.userDetails.name} style={{ width: '35px', height: '35px' }} className="rounded-circle me-3" />
-                        {/* <h4 className='user-name' style={{ margin: "unset" }}>{currentChat.userDetails.name}</h4> */}
+                        <img src={member.receiver.image} alt={member.receiver.name} style={{ width: '35px', height: '35px' }} className="rounded-circle me-3" />
                         <div>
-                            <h4 className='user-name' style={{ margin: "unset" }}>{currentChat.userDetails.name}</h4>
-                            {currentChat.isTyping.status && <p className='typing-indicator'>{currentChat.isTyping.text}...</p>}
+                            <h4 className='user-name' style={{ margin: "unset" }}>{member.receiver.name}</h4>
+                            {member.isTyping.status && <p className='typing-indicator'>{member.isTyping.text}...</p>}
                         </div>
                     </Col>
                 </Row>
             </CardHeader>
             <CardBody className='chat-container scrollbar p-2' id='style-3' >
-                {currentChat.messages.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => (
+                {member?.messages?.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => (
                     <div
                         key={index}
                         className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}

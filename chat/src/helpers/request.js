@@ -1,6 +1,7 @@
 
 import axios from "axios";
 import { setAllUsers, setLogin } from "../redux/actions/auth";
+import { setConversations } from "../redux/actions/chat";
 
 
 export const baseUrl = "http://localhost:4200/";
@@ -60,6 +61,10 @@ export const getConservationByUser = async (requestData) => {
     })
 
     let data = response.data;
+    if (data.status && 'data' in data) {
+        requestData.dispatch(setConversations(data.data))
+
+    }
     // requestData.dispatch(setAllUsers(data.data))
 
     return data
@@ -191,7 +196,7 @@ export const userUpdateRequest = async (requestData) => {
 }
 
 export const updatePassword = async (requestData) => {
-    console.log('requestData',requestData);
+    console.log('requestData', requestData);
     var response = await axios({
         method: 'put',
         data: requestData.data,
@@ -211,7 +216,7 @@ export const updatePassword = async (requestData) => {
 }
 
 export const conversationIdRequest = async (requestData) => {
-    console.log('requestData',requestData);
+    console.log('requestData', requestData);
     var response = await axios({
         method: 'POST',
         data: requestData.data,

@@ -56,15 +56,25 @@ server.listen(4200, function () {
 });
 
 
-
+const userRooms = new Map();
 
 sio.on('connection', function (socket) {
     console.log(`User ${socket.id} connected`);
 
+    socket.on('add-user', async (user) => {
+
+        console.log('add-user', user);
+
+        const userRoom = user._id;
+        socket.join(userRoom);
+        userRooms.set(user._id, userRoom);
+
+        socket.emit('add-user', `You are connected with ${userRoom}`);
+    })
 
 
-    socket.on('disconnect', async () => {
-        console.log('user disconnected:', socket.id);
+    socket.on('disconnect', async (user) => {
+        console.log('user disconnected:', socket.id, user);
         // await socketService.create({ socket: socket.id, connect: false });
         // socket.leave('room_' + connections[socket.id]);
         // delete connections[socket.id];
@@ -91,6 +101,19 @@ sio.on('connection', function (socket) {
 
         // Save message to the database if needed
         await postMessage(messageData)
+
+        const recipientId = messageData.recipientId;
+        const recipientPersonalRoom = userRooms.get(recipientId);
+
+        if (recipientPersonalRoom) {
+            // Emit the private message to the recipient's personal room
+            sio.to(recipientPersonalRoom).emit('privateMessage', messageData);
+        } else {
+            // Handle the case where the recipient is not online
+            console.log(`Recipient ${recipientId} is not online.`);
+            // You might consider sending a push notification or using another mechanism here
+        }
+
 
         //    await  postMessage(messageData)
         // Emit the message to the conversation room

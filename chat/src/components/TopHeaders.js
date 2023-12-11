@@ -22,13 +22,20 @@ export default function TopHeaders() {
 
         console.log('socket current', socket);
 
+
+
         const socketConnect = () => {
             socket.on('connect', () => {
                 console.log('socket is connected',);
             });
         }
 
-        socketConnect()
+        const joinPersonalRoom = () => {
+            socket.emit('add-user', user)
+        }
+
+        socketConnect();
+        joinPersonalRoom();
 
 
 
@@ -36,14 +43,21 @@ export default function TopHeaders() {
             console.log('socket is disconnected', socket);
         })
 
+        socket.on('add-user', (data) => {
+            console.log('add-user-response', data);
+        })
+
         const reconnectSocket = () => {
 
             if (!socket.connected) {
 
-                socketConnect()
+                socketConnect();
+                joinPersonalRoom();
             }
 
         }
+
+
 
 
         const reconnectInterval = setInterval(reconnectSocket, 15000)

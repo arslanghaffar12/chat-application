@@ -11,6 +11,7 @@ import io from "socket.io-client"
 import { SocketContext } from '../SocketContext'
 import ChatBody from '../components/ChatBody'
 import ChatTopBar from '../components/ChatTopBar'
+import { setConversations } from '../redux/actions/chat'
 
 
 export default function Home() {
@@ -18,7 +19,8 @@ export default function Home() {
 
   const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {}, isTyping: { status: false, text: '' } });
   const conversations = useSelector((state) => state.conversation.conversations);
-  
+  const conversationRef = useRef(conversations);
+
   const [curCnv, setCurCnv] = useState()
   console.log('curCnv ', curCnv);
   const [cnv_id, setCnv_id] = useState('')
@@ -160,7 +162,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchConservation()
-    fetchUsers()
+    fetchUsers();
   }, [])
 
   useEffect(() => {
@@ -176,32 +178,6 @@ export default function Home() {
 
 
 
-  // useEffect(() => {
-
-
-  //   socket.on('message', (message) => {
-  //     console.log('message is recieing', message);
-
-  //     setCurrentChat((prevChat) => {
-  //       const updatedChat = { ...prevChat };
-  //       updatedChat.messages = [...prevChat.messages, message];
-  //       return updatedChat;
-  //     });
-
-  //   })
-
-  //   socket.on('isChatting', (message) => {
-
-  //     console.log('isChattign is recieving', message);
-
-  //     // setCurrentChat((prevChat) => {
-  //     //   const updatedChat = { ...prevChat };
-  //     //   updatedChat.isTyping = message.isTyping;
-  //     //   return updatedChat
-  //     // })
-  //   })
-
-  // }, [socket])
 
 
   useEffect(() => {
@@ -212,6 +188,44 @@ export default function Home() {
     }
 
   }, [users])
+
+
+  useEffect(() => {
+
+    conversationRef.current = conversations;
+
+
+  }, [conversations])
+
+  useEffect(() => {
+
+
+    socket.on('privateMessage', (message) => {
+      console.log('personal message is receiving', message);
+      let conversations = conversationRef.current;
+
+      const index = conversations.findIndex(item => item.conversationId === message.conversationId);
+      if (index !== -1) {
+        const updatedSortedMessages = [message, ...conversations[index].sortedMessages];
+
+        // Update the conversation with the new sortedMessages array
+        const updatedConversation = {
+          ...conversations[index],
+          sortedMessages: updatedSortedMessages,
+        };
+        console.log('updatedConversation', updatedConversation);
+        const updatedConversations = [...conversations];
+        updatedConversations[index] = updatedConversation;
+        console.log('updatedConversations==', updatedConversations);
+        dispatch(setConversations(updatedConversations))
+
+      }
+    })
+
+
+
+  }, [socket])
+
 
 
 

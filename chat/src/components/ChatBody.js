@@ -9,6 +9,7 @@ import { getByCvnIdsRequest } from '../helpers/request'
 import { setConversations } from '../redux/actions/chat'
 
 export default function ChatBody({ socket, curCnv }) {
+    console.log('socket====',socket);
 
     const conversations = useSelector((state) => state.conversation.conversations);
     const dispatch = useDispatch()
@@ -26,6 +27,7 @@ export default function ChatBody({ socket, curCnv }) {
     }
     const user = useSelector(state => state.auth.user);
     const [member, setMember] = useState(_member);
+    const memberRef = useRef(member);
     console.log('member==', member);
     const [currentChat, setCurrentChat] = useState()
     console.log('currentChat===', currentChat);
@@ -53,7 +55,8 @@ export default function ChatBody({ socket, curCnv }) {
                 senderId: user._id,
                 senderName: user.name,
                 recipientId: member.receiver._id,
-                recipientName: member.receiver.name
+                recipientName: member.receiver.name,
+                socket : socket.id
             }
         };
         console.log('payload', payload.data);
@@ -137,6 +140,7 @@ export default function ChatBody({ socket, curCnv }) {
 
 
 
+
     }, [message]);
 
 
@@ -158,16 +162,22 @@ export default function ChatBody({ socket, curCnv }) {
 
 
     useEffect(() => {
+
+
         chatBodyRef.current?.scrollIntoView({ behavior: 'smooth' });
+        memberRef.current = member;
+
     }, [member])
 
 
     useEffect(() => {
 
 
-        socket.on('message', (message) => {
 
-            console.log('message received', "member", member.conversationId, 'message', message.conversationId, member.conversationId === message.conversationId, message);
+        socket.on('message', (message) => {
+            let member = memberRef.current;
+
+            console.log('message received', "member conversationId", member.conversationId, 'message conversationId', message.conversationId, "and is ======", member.conversationId === message.conversationId);
 
             if (member.conversationId === message.conversationId) {
 
@@ -179,6 +189,7 @@ export default function ChatBody({ socket, curCnv }) {
                 })
             }
             else {
+                
                 const index = conversations.findIndex(item => item.conversationId === message.conversationId);
 
                 if (index !== -1) {
@@ -189,26 +200,19 @@ export default function ChatBody({ socket, curCnv }) {
                     console.log('updatedConversation', updatedConversation);
                     const updatedConversations = [...conversations];
                     updatedConversations[index] = updatedConversation;
-                    console.log('updatedConversations==',updatedConversations);
+                    console.log('updatedConversations==', updatedConversations);
                     dispatch(setConversations(updatedConversations))
 
                 }
-
-
-
-
             }
-
-
-
-
-
-
 
         })
 
         socket.on('isChatting', (message) => {
+            let member = memberRef.current;
 
+            console.log('isChatting is recieving', message);
+            console.log('conversationId===============', member.conversationId, message.conversationId, 'and is', member.conversationId === message.conversationId);
             if (member.conversationId === message.conversationId) {
                 setMember((prevMember) => {
                     const _member = { ...prevMember };
@@ -222,6 +226,8 @@ export default function ChatBody({ socket, curCnv }) {
 
 
         })
+
+       
 
     }, [socket])
 

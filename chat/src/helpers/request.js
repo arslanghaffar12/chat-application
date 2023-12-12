@@ -235,3 +235,28 @@ export const conversationIdRequest = async (requestData) => {
 
 }
 
+
+export const updateStatusByConversationId = async (requestData) => {
+    console.log('requestData', requestData);
+    var response = await axios({
+        method: 'POST',
+        data: requestData,
+        url: `${baseUrl}chat/requestUpdate`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+
+
+
+
+

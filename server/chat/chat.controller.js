@@ -8,7 +8,11 @@ router.get("/", getAll);
 router.get("/getMessages", getMessages);
 router.get("/getByConversationId", getByConversationId);
 router.post("/insert", postMessage);
-router.post('/getByCoversationIds', getByCoversationIds)
+router.post('/getByCoversationIds', getByCoversationIds);
+router.post('/requestUpdate', requestUpdate);
+router.put('/update', updateMessage);
+
+
 
 
 module.exports = router;
@@ -44,6 +48,17 @@ function getMessages(req, res, next) {
         })
 }
 
+function updateMessage(req, res, next) {
+    chatService.updateMessage(req.body._id, req.body)
+        .then(response => {
+            resHandler.insertSuccess(res, response)
+        })
+        .catch(err => next(err))
+}
+
+
+
+
 function getByConversationId(req, res, next) {
     console.log("query are", req.query)
     chatService.getByConversationId(req.query.conservationId)
@@ -66,4 +81,15 @@ function getByCoversationIds(req, res, next) {
         .catch(err => {
             resHandler.errorResponse(res, err)
         })
+}
+
+
+function requestUpdate(req, res, next) {
+    chatService.updateStatusByConversationId(req.body)
+        .then(response => {
+            resHandler.getSuccess(res, response)
+        })
+        .catch(err => next(err))
+
+
 }

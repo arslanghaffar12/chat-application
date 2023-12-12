@@ -1,5 +1,7 @@
 const db = require("../helpers/db")
 const Conversation = db.Conversation;
+const Chat = db.Chat;
+const mongoose = require('mongoose');
 
 module.exports = {
   getAll,
@@ -7,7 +9,9 @@ module.exports = {
   create,
   createIfNotExist,
   checkByParticipants,
-  getByUser
+  getByUser,
+  updateConversationTime,
+  updateUnreadMessage
 }
 
 async function getAll(req) {
@@ -159,7 +163,8 @@ async function getByUser(userId) {
           conversationId: "$_id", // Rename _id to conversationId
           sortedMessages: [],
           unread: 5,
-          isTyping: { status: false, text: '' }
+          isTyping: { status: false, text: '' },
+          unreads: []
 
         }
       },
@@ -182,6 +187,25 @@ async function getByUser(userId) {
           ],
           as: 'sortedMessages'
         }
+      },
+      {
+        $lookup: {
+          from: 'chats',
+          let: { conversationId: "$conversationId" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$conversationId", "$$conversationId"] },
+                status: 'sent'
+              }
+            },
+            {
+              $sort: { timestamp: -1 } // Sort messages by timestamp in descending order
+            },
+
+          ],
+          as: 'unreads'
+        }
       }
 
     ]);
@@ -197,3 +221,68 @@ async function getByUser(userId) {
   }
 }
 
+
+async function updateConversationTime(conversation) {
+  try {
+    const updatedConversation = await Conversation.findByIdAndUpdate(
+      conversation.conversationId,
+      {
+        $set: {
+          timestamp: new Date(),
+        },
+      },
+      { new: true }
+    );
+
+    const unreadMessages = await Chat.aggregate([
+      {
+        $match: {
+          conversationId: new mongoose.Types.ObjectId(conversation.conversationId),
+          status: { $ne: 'read' } // Filter messages with status not equal to 'read'
+        }
+      },
+      {
+        $sort: { timestamp: -1 } // Sort messages by timestamp in descending order
+      },
+    ]);
+
+    return {
+      conversationId: conversation.conversationId,
+      unreads: unreadMessages,
+      timestamp: updatedConversation.timestamp,
+      sortedMessages: unreadMessages[0]
+    };
+  } catch (error) {
+    // Handle the error appropriately
+    console.error('Error in updateConversationTime:', error);
+    throw error; // Re-throw the error to propagate it up the call stack if needed
+  }
+}
+
+async function updateUnreadMessage(id) {
+  try {
+
+
+    const unreadMessages = await Chat.aggregate([
+      {
+        $match: {
+          conversationId: new mongoose.Types.ObjectId(id),
+          status: { $ne: 'read' } // Filter messages with status not equal to 'read'
+        }
+      },
+      {
+        $sort: { timestamp: -1 } // Sort messages by timestamp in descending order
+      },
+    ]);
+
+    return {
+      conversationId: id,
+      unreads: unreadMessages,
+      sortedMessages: unreadMessages[0]
+    };
+  } catch (error) {
+    // Handle the error appropriately
+    console.error('Error in updateUnreadMessage:', error);
+    throw error; // Re-throw the error to propagate it up the call stack if needed
+  }
+}

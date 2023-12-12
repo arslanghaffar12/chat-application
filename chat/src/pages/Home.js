@@ -19,7 +19,10 @@ export default function Home() {
 
   const [currentChat, setCurrentChat] = useState({ messages: [], userDetails: {}, isTyping: { status: false, text: '' } });
   const conversations = useSelector((state) => state.conversation.conversations);
+  console.log('conversations==', conversations);
   const conversationRef = useRef(conversations);
+  const [statusChange, setStatusChange] = useState();
+
 
   const [curCnv, setCurCnv] = useState()
   console.log('curCnv ', curCnv);
@@ -175,6 +178,24 @@ export default function Home() {
 
   }, [curCnv])
 
+  useEffect(() => {
+
+    if (typeof statusChange !== undefined && statusChange) {
+      console.log('statusChange', statusChange);
+      let _conversations = [...conversationRef.current];
+      const index = _conversations.findIndex(item => item.conversationId === statusChange);
+      let current = _conversations[index];
+      current.unreads = [];
+      _conversations[index] = current;
+      dispatch(setConversations(_conversations))
+
+    }
+
+
+
+
+  }, [statusChange])
+
 
 
 
@@ -192,6 +213,8 @@ export default function Home() {
 
   useEffect(() => {
 
+    console.log('conversations in useefeect===', conversations);
+
     conversationRef.current = conversations;
 
 
@@ -200,27 +223,61 @@ export default function Home() {
   useEffect(() => {
 
 
-    socket.on('privateMessage', (message) => {
-      console.log('personal message is receiving', message);
-      let conversations = conversationRef.current;
+    socket.on('privateMessage', (params) => {
+      console.log('personal message is receiving', params);
+      let conversations = [...conversationRef.current];
+      let message = params.message;
+      let updatedConversion = params.conversation
 
-      const index = conversations.findIndex(item => item.conversationId === message.conversationId);
+
+      const index = conversations.findIndex(item => item.conversationId === updatedConversion.conversationId);
       if (index !== -1) {
-        const updatedSortedMessages = [message, ...conversations[index].sortedMessages];
+        let currentConversation = { ...conversations[index], timestamp: updatedConversion.timestamp, unreads: updatedConversion.unreads, sortedMessages: [updatedConversion.sortedMessages] };
+        console.log('currentConversation', currentConversation);
 
-        // Update the conversation with the new sortedMessages array
-        const updatedConversation = {
-          ...conversations[index],
-          sortedMessages: updatedSortedMessages,
-        };
-        console.log('updatedConversation', updatedConversation);
-        const updatedConversations = [...conversations];
-        updatedConversations[index] = updatedConversation;
-        console.log('updatedConversations==', updatedConversations);
-        dispatch(setConversations(updatedConversations))
+
+
+
+        conversations[index] = currentConversation;
+
+        console.log('conversations===', conversations);
+
+
+
+
+        dispatch(setConversations(conversations))
 
       }
     })
+
+    // socket.on('update-message', (params) => {
+    //   console.log('message is updating', params);
+    //   let conversations = [...conversationRef.current];
+    //   let message = params.message;
+    //   let updatedConversion = params.conversation
+
+
+    //   const index = conversations.findIndex(item => item.conversationId === updatedConversion.conversationId);
+    //   if (index !== -1) {
+    //     let currentConversation = { ...conversations[index], unreads: updatedConversion.unreads, sortedMessages: [updatedConversion.sortedMessages] };
+    //     console.log('currentConversation', currentConversation);
+
+
+
+
+    //     conversations[index] = currentConversation;
+
+    //     console.log('conversations===', conversations);
+
+
+
+
+    //     dispatch(setConversations(conversations))
+
+    //   }
+    // })
+
+
 
 
 
@@ -277,7 +334,7 @@ export default function Home() {
                             <div className='d-flex m-0 first-text-div'>
                               <p className='first-text'>{latestMessage.content}</p>
                               <div className='unread'>
-                                <span>{item.unread}</span>
+                                <span>{item.unreads.length}</span>
                               </div>
 
                             </div>
@@ -317,7 +374,7 @@ export default function Home() {
           </Card>
         </Col>
         <Col md={8} className='p-0 m-0'>
-          <ChatBody socket={socket} curCnv={curCnv} />
+          <ChatBody socket={socket} curCnv={curCnv} setStatusChange={(e) => setStatusChange(e)} />
 
 
         </Col>

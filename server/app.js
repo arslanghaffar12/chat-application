@@ -14,7 +14,8 @@ const sio = require('socket.io')(server, {
 });
 const cors = require("cors");
 const { User } = require("./helpers/db");
-const { postMessage } = require("./chat/chat.service");
+const { postMessage, updateMessage } = require("./chat/chat.service");
+const { updateConversationTime, updateUnreadMessage } = require("./conversation/conversation.service");
 
 // const mongoConnectWithRetry = () => {
 //     return mongoose.connect("mongodb://127.0.0.1:27017/chat", {
@@ -96,18 +97,38 @@ sio.on('connection', function (socket) {
     })
 
 
+    // socket.on('update-message', async (message) => {
+    //     // console.log('message===', message);
+    //     let id = message._id;
+    //     let body = { _id: message._id, status: message.status }
+    //     const updatesMessage = await updateMessage(id, body);
+    //     const updatedCon = await updateUnreadMessage(message.conversationId);
+    //     const recipientId = message.userId;
+    //     const recipientPersonalRoom = userRooms.get(recipientId);
+    //     if (recipientPersonalRoom) {
+    //         // Emit the private message to the recipient's personal room
+    //         // sio.to(recipientPersonalRoom).emit('update-message', updatesMessage);
+    //     } else {
+    //         // Handle the case where the recipient is not online
+    //         console.log(`Recipient ${recipientId} is not online.`);
+    //         // You might consider sending a push notification or using another mechanism here
+    //     }
+    // })
+
+
 
     socket.on('message', async (messageData) => {
 
         // Save message to the database if needed
-        await postMessage(messageData)
-
+        await postMessage(messageData);
+        let updatedCon = await updateConversationTime(messageData);
         const recipientId = messageData.recipientId;
         const recipientPersonalRoom = userRooms.get(recipientId);
+        const message = { ...messageData, 'timestamp': Date.now() };
 
         if (recipientPersonalRoom) {
             // Emit the private message to the recipient's personal room
-            sio.to(recipientPersonalRoom).emit('privateMessage', messageData);
+            sio.to(recipientPersonalRoom).emit('privateMessage', { 'conversation': updatedCon, "message": message });
         } else {
             // Handle the case where the recipient is not online
             console.log(`Recipient ${recipientId} is not online.`);

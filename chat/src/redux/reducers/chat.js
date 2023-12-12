@@ -15,7 +15,8 @@ export const conversationReducer = (state = initialState, { type, payload: paylo
 
     switch (type) {
         case actionTypes.CONVERSATIONS_BY_USER:
-            return { ...state, conversations: payload }
+            console.log('payload===',payload);
+            return { ...state, conversations: payload.sort((a,b) => {return new Date(b.timestamp) - new Date(a.timestamp)}) }
         default:
             return state
     }

@@ -5,13 +5,12 @@ import useAutosizeTextArea from '../hooks/useAutoSizeTextArea'
 import { Bell, MoreVertical, Smile, Send } from 'react-feather'
 import { useDispatch, useSelector } from 'react-redux'
 import useChatScroll from '../hooks/useChatScroll'
-import { getByCvnIdsRequest } from '../helpers/request'
+import { getByCvnIdsRequest, updateStatusByConversationId } from '../helpers/request'
 import { setConversations } from '../redux/actions/chat'
 
-export default function ChatBody({ socket, curCnv }) {
-    console.log('socket====',socket);
+export default function ChatBody({ socket, curCnv, setStatusChange }) {
+    console.log('socket====', socket);
 
-    const conversations = useSelector((state) => state.conversation.conversations);
     const dispatch = useDispatch()
 
 
@@ -56,7 +55,8 @@ export default function ChatBody({ socket, curCnv }) {
                 senderName: user.name,
                 recipientId: member.receiver._id,
                 recipientName: member.receiver.name,
-                socket : socket.id
+                socket: socket.id,
+
             }
         };
         console.log('payload', payload.data);
@@ -113,7 +113,17 @@ export default function ChatBody({ socket, curCnv }) {
             _member = { ..._member, messages: chat.data.length > 0 ? chat.data[0].messages : [] }
         }
 
-        setMember(_member)
+        setMember(_member);
+
+        let response = await updateStatusByConversationId({_id : id});
+        if(response.status){
+            setStatusChange(id)
+        }
+        console.log('response of status update',response);
+
+
+      
+
 
 
 
@@ -144,27 +154,50 @@ export default function ChatBody({ socket, curCnv }) {
     }, [message]);
 
 
+    const updateMessageStatus = async (message) => {
+
+
+
+
+        let payload = {
+            _id: message._id,
+            status: 'read',
+            conversationId: message.conversationId,
+            userId: user._id
+        };
+
+        socket.emit('update-message', payload)
+
+
+
+        // Perform the update logic (e.g., make an API call to update the status in the database)
+        // ...
+
+        // For example, using an API call:
+        // await updateStatusAPI(messageId, newStatus);
+    };
 
 
     useEffect(() => {
+        const fetchAndHandleChat = async () => {
+            if (curCnv && curCnv.members.length > 0) {
+                await fetchChat({ id: curCnv.conversationId, _curCnv: curCnv });
+            }
+        };
 
-        if (curCnv && curCnv.members.length > 0) {
+        // Fetch chat data when curCnv changes
+        fetchAndHandleChat();
 
-            fetchChat({ id: curCnv.conversationId, _curCnv: curCnv });
+     
 
-        }
-        return () => {
-
-        }
-
-
-    }, [curCnv])
+    }, [curCnv]); // Re-run when curCnv changes
 
 
     useEffect(() => {
 
 
         chatBodyRef.current?.scrollIntoView({ behavior: 'smooth' });
+
         memberRef.current = member;
 
     }, [member])
@@ -189,21 +222,8 @@ export default function ChatBody({ socket, curCnv }) {
                 })
             }
             else {
-                
-                const index = conversations.findIndex(item => item.conversationId === message.conversationId);
 
-                if (index !== -1) {
-                    const updatedConversation = {
-                        ...conversations[index],
-                        sortedMessages: [...conversations[index].sortedMessages, message].sort((a, b) => a.timestamp - b.timestamp),
-                    };
-                    console.log('updatedConversation', updatedConversation);
-                    const updatedConversations = [...conversations];
-                    updatedConversations[index] = updatedConversation;
-                    console.log('updatedConversations==', updatedConversations);
-                    dispatch(setConversations(updatedConversations))
-
-                }
+               
             }
 
         })
@@ -227,7 +247,9 @@ export default function ChatBody({ socket, curCnv }) {
 
         })
 
-       
+    
+
+
 
     }, [socket])
 

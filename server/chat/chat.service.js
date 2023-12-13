@@ -60,10 +60,10 @@ async function getMessages(senderId, recipentId) {
 }
 
 async function updateMessage(id, body) {
-    console.log('id, body',id, body);
+    console.log('id, body', id, body);
     //check if record existed in database which need to be updated
     const existing_object = await Chat.findById(id);
-    if(!existing_object) throw 'Not_found';
+    if (!existing_object) throw 'Not_found';
 
     Object.assign(existing_object, body);
     return await existing_object.save();
@@ -81,7 +81,7 @@ async function updateStatusByConversationId(body) {
 
         // Log or handle the update result if needed
         // console.log(`Updated ${updateResult.nModified} messages to 'read' status.`);
-        
+
         // Return the update result or perform additional actions as needed
         return updateResult;
     } catch (error) {
@@ -224,4 +224,6 @@ async function getByCoversationIdsOld(requestData) {
         throw error;
     }
 }
+
+
 

@@ -7,11 +7,14 @@ const resHandler = require("../helpers/responseHandler")
 router.get("/", getAll)
 router.get("/getByUser", getByUser)
 router.get('/:id', getById);
-router.post("/checkByParticipants", checkByParticipants)
-router.post("/createIfNotExist", createIfNotExist)
+router.post("/checkByParticipants", checkByParticipants);
+router.post("/createIfNotExist", createIfNotExist);
+router.post("/getConversationChunkById", getConversationChunkById),
 
 
-module.exports = router
+
+
+    module.exports = router
 
 
 async function getAll(req, res, next) {
@@ -68,7 +71,17 @@ async function getByUser(req, res, next) {
         })
         .catch(err => {
             console.log("response in controller error", err)
-            
+
             resHandler.errorResponse(res, err)
         })
+}
+
+async function getConversationChunkById(req, res, next) {
+    service.getConversationChunkById(req.body.conversationId, req.body.userId)
+        .then(response => {
+            console.log("", response)
+            resHandler.getSuccess(res, response)
+        })
+        .catch(err => next(err))
+
 }

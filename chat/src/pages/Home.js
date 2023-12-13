@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, FolderPlus, MoreVertical, Plus } from 'react-fe
 import { Card, CardBody, CardFooter, CardHeader, Col, Row } from 'reactstrap'
 import "../css/chat.css"
 import brand from "../assets/img/download.png"
-import { getChatByConversationId, getConservationByUser, getByCvnIdsRequest, postMessageRequest, usersRequest, conversationIdRequest } from '../helpers/request'
+import { getChatByConversationId, getConservationByUser, getByCvnIdsRequest, postMessageRequest, usersRequest, conversationIdRequest, getConversationChunkById } from '../helpers/request'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import useAutosizeTextArea from '../hooks/useAutoSizeTextArea'
@@ -30,6 +30,8 @@ export default function Home() {
   const socket = useContext(SocketContext);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isScrolled2, setIsScrolled2] = useState(false);
+
+  console.log('isScrolled==', isScrolled, isScrolled2);
 
   const user = useSelector(state => state.auth.user);
   const [allChats, setAllChats] = useState([])
@@ -58,12 +60,12 @@ export default function Home() {
 
   const handleNewChatClick = async (item) => {
     console.log('item', item);
-    console.log('allChats', allChats);
-    let isChatFound = allChats.filter((chat) => { return chat.userDetails._id === item._id })[0];
+
+    console.log('allChats', conversations);
+    let isChatFound = conversations.filter((chat) => { return chat.members[0]._id === item._id })[0];
     console.log('isChatFound', isChatFound);
     if (typeof isChatFound !== undefined && isChatFound) {
-      setCurrentChat({ ...isChatFound, isTyping: { status: false, text: '' } })
-      setCnv_id(isChatFound.conversationId);
+      setCurCnv(isChatFound);
 
       setCurrentView('chat')
     }
@@ -76,18 +78,36 @@ export default function Home() {
       }
 
       let response = await conversationIdRequest(obj);
-      let payload = {
-        data: {
-          cnv_ids: [response.data[0]?._id],
-          user_id: user._id
+      console.log('response of conversationIdRequest', response);
+      if (response.status) {
+        let payload = {
+          data: { userId: user._id, conversationId: response.data._id }
         }
-      }
-      const newChat = await getByCvnIdsRequest(payload);
-      if (newChat.status) {
+        let newCvnResponse = await getConversationChunkById(payload);
+        console.log('newCvnResponse', newCvnResponse);
 
-        setAllChats([...allChats, newChat.data])
-        setCurrentChat({ ...newChat.data[0], isTyping: { status: false, text: '' } })
+        if (newCvnResponse.status) {
+          console.log('newCvnResponse', newCvnResponse);
+          if (newCvnResponse.data.length > 0) {
+            let _currentCnv = newCvnResponse.data[0];
+
+            let _conversations = [_currentCnv, ...conversations];
+            dispatch(setConversations(_conversations));
+            setCurrentView('chat')
+
+            setTimeout(() => {
+              setCurCnv(_currentCnv);
+
+            }, 2000)
+
+
+          }
+        }
+
       }
+
+
+
 
       console.log('response==', response);
     }
@@ -107,7 +127,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const dataListingDiv = document.getElementById('chat');
+      const dataListingDiv = document.getElementsByClassName('chat')[0];
       if (dataListingDiv) {
         const scrollY = dataListingDiv.scrollTop;
         const threshold = 1; // You can adjust this threshold as needed
@@ -118,12 +138,10 @@ export default function Home() {
     };
 
     // Attach the scroll event listener to the data listing div
-    const dataListingDiv = document.getElementById('chat');
+    const dataListingDiv = document.getElementsByClassName('chat')[0];
     if (dataListingDiv) {
       dataListingDiv.addEventListener('scroll', handleScroll);
     }
-
-
 
     // Cleanup the event listener on component unmount
     return () => {
@@ -133,9 +151,10 @@ export default function Home() {
     };
   }, []);
 
+
   useEffect(() => {
     const handleScroll = () => {
-      const dataListingDiv = document.getElementById('newChat');
+      const dataListingDiv = document.getElementsByClassName('newChat')[0];
       if (dataListingDiv) {
         const scrollY = dataListingDiv.scrollTop;
         const threshold = 1; // You can adjust this threshold as needed
@@ -146,12 +165,10 @@ export default function Home() {
     };
 
     // Attach the scroll event listener to the data listing div
-    const dataListingDiv = document.getElementById('newChat');
+    const dataListingDiv = document.getElementsByClassName('newChat')[0];
     if (dataListingDiv) {
       dataListingDiv.addEventListener('scroll', handleScroll);
     }
-
-
 
     // Cleanup the event listener on component unmount
     return () => {
@@ -184,14 +201,15 @@ export default function Home() {
       console.log('statusChange', statusChange);
       let _conversations = [...conversationRef.current];
       const index = _conversations.findIndex(item => item.conversationId === statusChange);
-      let current = _conversations[index];
-      current.unreads = [];
-      _conversations[index] = current;
-      dispatch(setConversations(_conversations))
+      if (index !== -1) {
+        let current = _conversations[index];
+        current.unreads = [];
+        _conversations[index] = current;
+        dispatch(setConversations(_conversations))
+
+      }
 
     }
-
-
 
 
   }, [statusChange])
@@ -250,32 +268,29 @@ export default function Home() {
       }
     })
 
-    // socket.on('update-message', (params) => {
-    //   console.log('message is updating', params);
-    //   let conversations = [...conversationRef.current];
-    //   let message = params.message;
-    //   let updatedConversion = params.conversation
+    socket.on('update-message', (message) => {
+      console.log('message is updating', message);
+
+      let conversations = JSON.parse(JSON.stringify([...conversationRef.current]));
 
 
-    //   const index = conversations.findIndex(item => item.conversationId === updatedConversion.conversationId);
-    //   if (index !== -1) {
-    //     let currentConversation = { ...conversations[index], unreads: updatedConversion.unreads, sortedMessages: [updatedConversion.sortedMessages] };
-    //     console.log('currentConversation', currentConversation);
-
-
-
-
-    //     conversations[index] = currentConversation;
-
-    //     console.log('conversations===', conversations);
+      const index = conversations.findIndex(item => item.conversationId === message.conversationId);
+      if (index !== -1) {
+        let currentConversation = conversations[index];
+        currentConversation.unreads = currentConversation.unreads.filter((item) => { return item._id !== message._id });
+        console.log('currentConversation', currentConversation);
 
 
 
 
-    //     dispatch(setConversations(conversations))
+        conversations[index] = currentConversation;
 
-    //   }
-    // })
+        console.log('conversations===', conversations);
+
+        dispatch(setConversations(conversations))
+
+      }
+    })
 
 
 
@@ -312,14 +327,14 @@ export default function Home() {
                   <ChevronDown size={14} />
                   <h3 className='my-chat mx-2'>My chats</h3>
 
-                  <span className='my-chat' style={{ marginLeft: "auto" }}>{allChats.length}</span>
+                  <span className='my-chat' style={{ marginLeft: "auto" }}>{conversations.length}</span>
 
 
 
                 </div>
-                <div className='m-0 p-0' id='chat'>
+                <div className='m-0 p-0' id='chat' style={{ height: "62vh" }}>
 
-                  <div className={`m-3 ${isScrolled ? 'scrolled' : ''}`} id="style-3" style={{ width: "100%", overflowY: "auto", cursor: "pointer" }}>
+                  <div className={`m-3 scrollbar chat ${isScrolled ? 'scrolled' : ''}`} id="style-3" style={{ width: "95%", height: '100%', overflowY: "auto", cursor: "pointer" }}>
                     {conversations?.map((item, ind) => {
 
                       let user = item.members.length > 0 ? item.members[0] : {};
@@ -333,9 +348,9 @@ export default function Home() {
                             <h4 className='user-name'>{user.name}</h4>
                             <div className='d-flex m-0 first-text-div'>
                               <p className='first-text'>{latestMessage.content}</p>
-                              <div className='unread'>
+                              {item.unreads.length > 0 && <div className='unread'>
                                 <span>{item.unreads.length}</span>
-                              </div>
+                              </div>}
 
                             </div>
                           </div>
@@ -351,9 +366,9 @@ export default function Home() {
             {
               currentView === 'newChat' &&
               <>
-                <div className='p-0 m-0' id='newChat'>
+                <div className='p-0 m-0' style={{ height: "62vh" }} id='newChat'>
 
-                  <div className={`m-3 ${isScrolled2 ? 'scrolled' : ''}`} id="style-3" style={{ width: "100%", overflowY: "auto", cursor: "pointer" }}>
+                  <div className={`m-3 newChat scrollbar ${isScrolled2 ? 'scrolled' : ''}`} id="style-3" style={{ width: "96%", height: "100%", overflowY: "auto", cursor: "pointer" }}>
                     {usersToShow?.map((item, ind) => (
                       <div key={ind} className='d-flex align-items-center border-bottom py-2' onClick={() => handleNewChatClick(item)}>
                         <img src={item.image} alt={item.name} style={{ width: '50px', height: '50px' }} className="rounded-circle me-3" />
@@ -374,7 +389,14 @@ export default function Home() {
           </Card>
         </Col>
         <Col md={8} className='p-0 m-0'>
-          <ChatBody socket={socket} curCnv={curCnv} setStatusChange={(e) => setStatusChange(e)} />
+          {typeof curCnv !== undefined && curCnv &&
+            <ChatBody socket={socket} curCnv={curCnv} setStatusChange={(e) => setStatusChange(e)} />
+          }
+          {!curCnv &&
+            <Card className='border-0 chat-card '>
+
+            </Card>
+          }
 
 
         </Col>

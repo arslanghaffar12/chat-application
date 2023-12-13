@@ -97,30 +97,29 @@ sio.on('connection', function (socket) {
     })
 
 
-    // socket.on('update-message', async (message) => {
-    //     // console.log('message===', message);
-    //     let id = message._id;
-    //     let body = { _id: message._id, status: message.status }
-    //     const updatesMessage = await updateMessage(id, body);
-    //     const updatedCon = await updateUnreadMessage(message.conversationId);
-    //     const recipientId = message.userId;
-    //     const recipientPersonalRoom = userRooms.get(recipientId);
-    //     if (recipientPersonalRoom) {
-    //         // Emit the private message to the recipient's personal room
-    //         // sio.to(recipientPersonalRoom).emit('update-message', updatesMessage);
-    //     } else {
-    //         // Handle the case where the recipient is not online
-    //         console.log(`Recipient ${recipientId} is not online.`);
-    //         // You might consider sending a push notification or using another mechanism here
-    //     }
-    // })
+    socket.on('update-message', async (message) => {
+        console.log('message emiting', message);
+        let id = message._id;
+        let body = { _id: message._id, status: message.status }
+
+        const updatesMessage = await updateMessage(id, body);
+        const recipientId = message.recipientId;
+        const recipientPersonalRoom = userRooms.get(recipientId);
+
+        if (recipientPersonalRoom) {
+            sio.to(recipientPersonalRoom).emit('update-message', updatesMessage);
+        } else {
+          console.log('user is not online');
+        }
+    })
 
 
 
     socket.on('message', async (messageData) => {
 
         // Save message to the database if needed
-        await postMessage(messageData);
+        let newMessage = await postMessage(messageData);
+        console.log('newMessage',newMessage);
         let updatedCon = await updateConversationTime(messageData);
         const recipientId = messageData.recipientId;
         const recipientPersonalRoom = userRooms.get(recipientId);
@@ -138,7 +137,7 @@ sio.on('connection', function (socket) {
 
         //    await  postMessage(messageData)
         // Emit the message to the conversation room
-        sio.to(messageData.conversationId).emit('message', messageData);
+        sio.to(messageData.conversationId).emit('message', newMessage);
 
         console.error('messageData is', messageData);
 

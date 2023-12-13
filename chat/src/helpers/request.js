@@ -72,6 +72,32 @@ export const getConservationByUser = async (requestData) => {
 }
 
 
+export const getConversationChunkById = async (requestData) => {
+
+    var response = await axios({
+        method: 'POST',
+        data : requestData.data,
+        url: `${baseUrl}conversation/getConversationChunkById`,
+        headers: {
+            "Content-Type": "application/json",
+            // "Authorization": "Bearer " + user.token,
+        }
+
+    })
+
+    let data = response.data;
+    if (data.status && 'data' in data) {
+        // requestData.dispatch(setConversations(data.data))
+
+    }
+    // requestData.dispatch(setAllUsers(data.data))
+
+    return data
+
+}
+
+
+
 
 export const getChatByConversationId = async (requestData) => {
 

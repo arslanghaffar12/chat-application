@@ -7,14 +7,13 @@ import { useDispatch, useSelector } from 'react-redux'
 import useChatScroll from '../hooks/useChatScroll'
 import { getByCvnIdsRequest, updateStatusByConversationId } from '../helpers/request'
 import { setConversations } from '../redux/actions/chat'
-
 export default function ChatBody({ socket, curCnv, setStatusChange }) {
-    console.log('socket====', socket);
 
     const dispatch = useDispatch()
+    const chatboxRef = useRef(null);
 
+    const [viewedMessages, setViewedMessages] = useState([]);
 
-    console.log('curCnv===', curCnv);
     let _member = {
         receiver: {},
         messages: [],
@@ -26,20 +25,21 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
     }
     const user = useSelector(state => state.auth.user);
     const [member, setMember] = useState(_member);
-    const memberRef = useRef(member);
-    console.log('member==', member);
+    const [newMessages, setNewMessages] = useState(_member)
+    const memberRef = useRef(newMessages);
+
     const [currentChat, setCurrentChat] = useState()
-    console.log('currentChat===', currentChat);
 
     const chatBodyRef = useRef(member);
 
     const [message, setMessage] = useState()
+    console.log('message type is', message);
     const textAreaRef = useRef()
     useAutosizeTextArea(textAreaRef.current, message)
 
     const handleChange = (evt) => {
         const val = evt.target?.value;
-
+        console.log('handleChange is running');
         setMessage(val);
 
     };
@@ -56,20 +56,19 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
                 recipientId: member.receiver._id,
                 recipientName: member.receiver.name,
                 socket: socket.id,
+                status: 'sent'
 
             }
         };
-        console.log('payload', payload.data);
 
 
         socket.emit('message', payload.data)
-        setMessage()
+        setMessage('')
 
 
     }
 
     const [isTyping, setIsTyping] = useState(false);
-    console.log('isTyping===', isTyping);
 
     const isChattingRequest = (_status) => {
 
@@ -114,19 +113,25 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
         }
 
         setMember(_member);
+        setNewMessages({ ..._member, messages: [] })
 
-        let response = await updateStatusByConversationId({_id : id});
-        if(response.status){
-            setStatusChange(id)
+        if (_member.unreads.length > 0) {
+            let response = await updateStatusByConversationId({ _id: id });
+            if (response.status) {
+                setStatusChange(id)
+            }
         }
-        console.log('response of status update',response);
-
-
-      
 
 
 
+    }
 
+    const updateStatus = (message) => {
+        console.log('message in update', message);
+        if (message.status !== 'read' && message.senderId !== user._id) {
+            console.log('this message is not read yet', message.content);
+            socket.emit('update-message', { ...message, status: "read" })
+        }
     }
 
 
@@ -149,33 +154,9 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
         }
 
 
-
-
     }, [message]);
 
 
-    const updateMessageStatus = async (message) => {
-
-
-
-
-        let payload = {
-            _id: message._id,
-            status: 'read',
-            conversationId: message.conversationId,
-            userId: user._id
-        };
-
-        socket.emit('update-message', payload)
-
-
-
-        // Perform the update logic (e.g., make an API call to update the status in the database)
-        // ...
-
-        // For example, using an API call:
-        // await updateStatusAPI(messageId, newStatus);
-    };
 
 
     useEffect(() => {
@@ -188,19 +169,17 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
         // Fetch chat data when curCnv changes
         fetchAndHandleChat();
 
-     
 
     }, [curCnv]); // Re-run when curCnv changes
 
 
     useEffect(() => {
 
-
         chatBodyRef.current?.scrollIntoView({ behavior: 'smooth' });
+        memberRef.current = newMessages;
 
-        memberRef.current = member;
 
-    }, [member])
+    }, [member, newMessages])
 
 
     useEffect(() => {
@@ -210,20 +189,25 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
         socket.on('message', (message) => {
             let member = memberRef.current;
 
-            console.log('message received', "member conversationId", member.conversationId, 'message conversationId', message.conversationId, "and is ======", member.conversationId === message.conversationId);
 
             if (member.conversationId === message.conversationId) {
 
-                console.log('message received inside', member.conversationId === message.conversationId, message);
-                setMember((prevMember) => {
+                // setNewMessages((prevMember) => {
+                //     const newMessages = [...prevMember, message];
+                //     // _member.messages = [..._member.messages, message];
+                //     return newMessages
+                // })
+                setNewMessages((prevMember) => {
                     const _member = { ...prevMember };
                     _member.messages = [..._member.messages, message];
                     return _member
                 })
+
+                updateStatus(message)
             }
             else {
 
-               
+
             }
 
         })
@@ -232,9 +216,8 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
             let member = memberRef.current;
 
             console.log('isChatting is recieving', message);
-            console.log('conversationId===============', member.conversationId, message.conversationId, 'and is', member.conversationId === message.conversationId);
             if (member.conversationId === message.conversationId) {
-                setMember((prevMember) => {
+                setNewMessages((prevMember) => {
                     const _member = { ...prevMember };
                     _member.isTyping = message.isTyping;
                     return _member
@@ -242,17 +225,13 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
 
             }
 
-
-
-
         })
 
-    
+
 
 
 
     }, [socket])
-
 
 
     return (
@@ -263,20 +242,50 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
                         <img src={member.receiver.image} alt={member.receiver.name} style={{ width: '35px', height: '35px' }} className="rounded-circle me-3" />
                         <div>
                             <h4 className='user-name' style={{ margin: "unset" }}>{member.receiver.name}</h4>
-                            {member.isTyping.status && <p className='typing-indicator'>{member.isTyping.text}...</p>}
+                            {newMessages.isTyping.status && <p className='typing-indicator'>{newMessages.isTyping.text}...</p>}
                         </div>
                     </Col>
                 </Row>
             </CardHeader>
-            <CardBody className='chat-container scrollbar p-2' id='style-3' >
-                {member?.messages?.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => (
-                    <div
-                        key={index}
-                        className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
-                    >
-                        <div className="message-content">{message.content}</div>
-                    </div>
-                ))}
+            <CardBody className='chat-container scrollbar p-2 chatbox' id='style-3' >
+                {member?.messages?.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => {
+
+                    let status = message.status;
+                    console.log('status of message in old', status);
+                    return (
+                        <div
+                            key={index}
+                            id={message._id}
+                            data-index={index}
+                            className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
+                        >
+                            <div className="message-content">{message.content}</div>
+                        </div>
+                    )
+
+
+
+                })}
+
+                {newMessages?.messages?.sort((a, b) => a.timestamp - b.timestamp).map((message, index) => {
+
+                    let status = message.status;
+                    console.log('status of message in new', status, message.content);
+                    return (
+                        <div
+                            key={index}
+                            id={message._id}
+                            data-index={index}
+                            className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
+                        >
+                            <div className="message-content">{message.content}</div>
+                        </div>
+                    )
+
+
+
+                })}
+
                 <div ref={chatBodyRef}></div>
 
             </CardBody>
@@ -292,7 +301,9 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
                     onChange={handleChange}
                     rows={1}
                     value={message}
-                    // onFocus={handleFocus}
+                    // onKeyDown={handleChange}
+                    // onKeyUp={handleChange}
+                    // onFocus={handleChange}
                     // onBlur={handleBlur}
                     onKeyDown={handleKeyDown}
                 >

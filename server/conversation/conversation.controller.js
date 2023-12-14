@@ -23,9 +23,8 @@ async function getAll(req, res, next) {
             resHandler.getSuccess(res, response)
 
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 
 }
 
@@ -34,9 +33,8 @@ async function getById(req, res, next) {
         .then(response => {
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 }
 
 async function checkByParticipants(req, res, next) {
@@ -44,9 +42,8 @@ async function checkByParticipants(req, res, next) {
         .then(response => {
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 }
 
 async function createIfNotExist(req, res, next) {
@@ -55,9 +52,8 @@ async function createIfNotExist(req, res, next) {
             console.log("response of created", response)
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 }
 
 async function getByUser(req, res, next) {
@@ -69,11 +65,8 @@ async function getByUser(req, res, next) {
             console.log("response in controller", response)
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            console.log("response in controller error", err)
+        .catch(err => next(err))
 
-            resHandler.errorResponse(res, err)
-        })
 }
 
 async function getConversationChunkById(req, res, next) {

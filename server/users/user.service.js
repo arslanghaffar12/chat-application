@@ -71,6 +71,7 @@ async function create(req, res) {
     return await newUser.save();
 }
 
+
 async function update(id, body) {
 
     let isExist = await User.findById(id);
@@ -92,6 +93,7 @@ async function update(id, body) {
     return await User.findOne({ _id: id })
 }
 
+
 async function deleteUser(id) {
     try {
         return await User.deleteOne({ _id: id })
@@ -101,6 +103,7 @@ async function deleteUser(id) {
     }
 
 }
+
 
 async function updatePassword(id, request_param) {
     // id = new mongoose.Types.ObjectId(id)

@@ -11,19 +11,19 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
 export default function Login() {
 
     const { useState } = React;
-    const [user, setUser] = useLocalStorage('user', {login : false});
+    const [user, setUser] = useLocalStorage('user', { login: false });
     const userrr = useSelector(state => state.auth.user);
 
-    console.log("userrr ",userrr);
+    console.log("userrr ", userrr);
     let navigate = useNavigate();
-    var to = "/"
+    var to = "/chat"
 
     const [inputs, setinputs] = useState({
         email: "",
         password: ""
     });
 
-    const dispatch =  useDispatch();
+    const dispatch = useDispatch();
 
     const [warnemail, setwarnemail] = useState(false);
     const [warnpass, setwarnpass] = useState(false);
@@ -65,8 +65,8 @@ export default function Login() {
         else {
             console.log('inputs are', inputs);
 
-            let response = await authenticate({data :inputs, dispatch});
-            setUser(response.data);
+            let response = await authenticate({ data: inputs, dispatch });
+            // setUser(response.data);
             if (response.status) {
                 console.log('inside');
                 navigate(to)

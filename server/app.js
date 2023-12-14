@@ -16,26 +16,16 @@ const cors = require("cors");
 const { User } = require("./helpers/db");
 const { postMessage, updateMessage } = require("./chat/chat.service");
 const { updateConversationTime, updateUnreadMessage } = require("./conversation/conversation.service");
+const {validateToken} = require('./helpers/jwt')
 
-// const mongoConnectWithRetry = () => {
-//     return mongoose.connect("mongodb://127.0.0.1:27017/chat", {
-//         serverSelectionTimeoutMS: 5000, // Increase the server selection timeout
-//     })
-//         .then(() => console.log("Connected to MongoDB"))
-//         .catch((err) => {
-//             console.error("Connection to MongoDB failed:", err);
-//             setTimeout(mongoConnectWithRetry, 10000);
-//         });
-// };
-
-// mongoConnectWithRetry();
-
-// Use body-parser middleware
 
 var corsOptions = {
     origin: "*",
     optionsSuccessStatus: 200
 }
+
+app.use(validateToken)
+
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());

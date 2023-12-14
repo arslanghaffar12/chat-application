@@ -20,9 +20,8 @@ function authenticate(req, res, next) {
             console.log('response of login', response);
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 
 }
 
@@ -52,7 +51,8 @@ function create2(req, res, next) {
         .then(response => {
             resHandler.insertSuccess(res, response)
         })
-        .catch(err => resHandler.errorResponse(res, err))
+        .catch(err => next(err))
+
     // userService.create(req.body)
     //     .then(response => {
     //         resHandler.insertSuccess(res, response)

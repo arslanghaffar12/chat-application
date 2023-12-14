@@ -22,9 +22,8 @@ function getAll(req, res, next) {
         .then(response => {
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 }
 
 function postMessage(req, res, next) {
@@ -32,9 +31,8 @@ function postMessage(req, res, next) {
         .then(response => {
             resHandler.insertSuccess(res, response);
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 }
 
 function getMessages(req, res, next) {
@@ -43,9 +41,8 @@ function getMessages(req, res, next) {
         .then(response => {
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(req, err)
-        })
+        .catch(err => next(err))
+
 }
 
 function updateMessage(req, res, next) {
@@ -67,9 +64,8 @@ function getByConversationId(req, res, next) {
 
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 }
 
 
@@ -78,9 +74,8 @@ function getByCoversationIds(req, res, next) {
         .then(response => {
             resHandler.getSuccess(res, response)
         })
-        .catch(err => {
-            resHandler.errorResponse(res, err)
-        })
+        .catch(err => next(err))
+
 }
 
 

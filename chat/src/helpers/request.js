@@ -2,25 +2,40 @@
 import axios from "axios";
 import { setAllUsers, setLogin } from "../redux/actions/auth";
 import { setConversations } from "../redux/actions/chat";
+import { storage } from "./common";
 
 
 export const baseUrl = "http://localhost:4200/";
+
+let defaultUser = { login: false }
+var user = storage.getParsed('user', defaultUser);
+
+console.log('user in request==', user);
+
+
 export const authenticate = async (requestData) => {
 
-    var response = await axios({
+    var payload;
+    await axios({
         method: 'POST',
         data: requestData.data,
         url: `${baseUrl}users/authenticate`,
 
+    }).then((res) => {
+        payload = res.data
+        console.log('response==', payload,res);
+        user = payload.data;
+        requestData.dispatch(setLogin(payload.data))
+
+    }).catch(err => {
+        // requestData.dispatch(setLogin(data.data))
+
     })
 
-    let data = response.data;
-    requestData.dispatch(setLogin(data.data))
 
-    return data
+    return payload
 
 
-    console.log("response in login", response)
 }
 
 
@@ -49,13 +64,15 @@ export const usersRequest = async (requestData) => {
 
 export const getConservationByUser = async (requestData) => {
 
+    console.log('user in getConservationByUser ===',user);
+
     var response = await axios({
         method: 'GET',
         // data : requestData.data,
         url: `${baseUrl}conversation/getByUser?id=${requestData._id}`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user?.token,
         }
 
     })
@@ -76,11 +93,11 @@ export const getConversationChunkById = async (requestData) => {
 
     var response = await axios({
         method: 'POST',
-        data : requestData.data,
+        data: requestData.data,
         url: `${baseUrl}conversation/getConversationChunkById`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })

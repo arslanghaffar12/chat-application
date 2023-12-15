@@ -6,7 +6,9 @@ import { Bell, MoreVertical, Smile, Send } from 'react-feather'
 import { useDispatch, useSelector } from 'react-redux'
 import useChatScroll from '../hooks/useChatScroll'
 import { getByCvnIdsRequest, updateStatusByConversationId } from '../helpers/request'
-import { setConversations } from '../redux/actions/chat'
+import { setConversations } from '../redux/actions/chat';
+import moment from "moment";
+
 export default function ChatBody({ socket, curCnv, setStatusChange }) {
 
     const dispatch = useDispatch()
@@ -26,6 +28,7 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
     const user = useSelector(state => state.auth.user);
     const [member, setMember] = useState(_member);
     const [newMessages, setNewMessages] = useState(_member)
+    console.log('newMessages==', newMessages);
     const memberRef = useRef(newMessages);
 
     const [currentChat, setCurrentChat] = useState()
@@ -106,9 +109,13 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
         }
 
         let chat = await getByCvnIdsRequest(payload);
+        if (chat === undefined) {
+            return alert('something is wrong')
+        }
+        console.log('chat is', chat);
         let _member = { ..._curCnv, receiver: _curCnv.members[0], }
 
-        if (chat.status) {
+        if (typeof chat !== undefined && chat && chat.status) {
             _member = { ..._member, messages: chat.data.length > 0 ? chat.data[0].messages : [] }
         }
 
@@ -116,8 +123,18 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
         setNewMessages({ ..._member, messages: [] })
 
         if (_member.unreads.length > 0) {
+
+            let anyMessage = _member.unreads.filter((item) => { return item.senderId !== user._id })[0];
+            console.log('anyMessage==', anyMessage);
+            socket.emit('update-all-messages-status', anyMessage)
+
             let response = await updateStatusByConversationId({ _id: id });
-            if (response.status) {
+
+            if (response === undefined) {
+                return alert('something is wrong')
+            }
+            if (response && response.status) {
+
                 setStatusChange(id)
             }
         }
@@ -130,7 +147,8 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
         console.log('message in update', message);
         if (message.status !== 'read' && message.senderId !== user._id) {
             console.log('this message is not read yet', message.content);
-            socket.emit('update-message', { ...message, status: "read" })
+            socket.emit('update-message', { ...message, status: "read" });
+
         }
     }
 
@@ -227,11 +245,74 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
 
         })
 
+        socket.on('update-status-of-message', (message) => {
+            let member = memberRef.current;
+
+            console.log('update-status-of-message', message.conversationId, member.conversationId, member.conversationId === message.conversationId);
+            if (member.conversationId === message.conversationId) {
+
+                console.log('_member in ddd', _member);
+
+
+                setNewMessages((prevMember) => {
+                    const _member = { ...prevMember };
+                    _member.messages = _member.messages.map((item) => {
+                        if (item._id === message._id) {
+                            return message
+                        } else {
+                            return item
+                        }
+                    })
+
+                    return _member
+                })
+
+            }
+        })
+
+
+        socket.on('update-all-messages-status', (message) => {
+
+
+
+            console.log('update-all-messages-status',);
+            setNewMessages((prevMember) => {
+                const _member = { ...prevMember };
+                _member.messages = _member.messages.map((item) => {
+
+                    return { ...item, status: 'read' }
+                })
+
+                return _member
+            })
+            setMember((prevMember) => {
+                const _member = { ...prevMember };
+                _member.messages = _member.messages.map((item) => {
+
+                    return { ...item, status: 'read' }
+                })
+
+                return _member
+            })
+        })
+
 
 
 
 
     }, [socket])
+
+    const getMessageStatusIcon = (status) => {
+        switch (status) {
+            case 'sent':
+                return 'delivered';
+            case 'read':
+                return 'seen';
+
+            default:
+                return ''; // You can customize this for other statuses
+        }
+    };
 
 
     return (
@@ -253,14 +334,26 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
                     let status = message.status;
                     console.log('status of message in old', status);
                     return (
+
                         <div
                             key={index}
                             id={message._id}
                             data-index={index}
                             className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
                         >
-                            <div className="message-content">{message.content}</div>
+                            <div className="message-content">{message.content}
+
+                                <span className="message-timestamp" style={{ color: message.senderId !== user._id ? 'black' : 'white' }}>{moment(new Date(message.timestamp)).format('LT')}</span>
+                                {message.senderId === user._id && <span className="message-status">
+                                    {getMessageStatusIcon(message.status)}
+                                </span>}
+                            </div>
+
                         </div>
+
+
+
+
                     )
 
 
@@ -278,13 +371,20 @@ export default function ChatBody({ socket, curCnv, setStatusChange }) {
                             data-index={index}
                             className={(message.senderId === user._id) ? 'right-message mb-2' : 'left-message mb-2'}
                         >
-                            <div className="message-content">{message.content}</div>
+                            <div className="message-content">{message.content}
+                                <span className="message-timestamp" style={{ color: message.senderId !== user._id ? 'black' : 'white' }}>{moment(new Date(message.timestamp)).format('LT')}</span>
+                                {message.senderId === user._id && <span className="message-status">
+                                    {getMessageStatusIcon(message.status)}
+                                </span>}
+                            </div>
                         </div>
                     )
 
 
 
                 })}
+
+
 
                 <div ref={chatBodyRef}></div>
 

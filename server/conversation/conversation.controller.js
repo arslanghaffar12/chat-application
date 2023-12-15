@@ -10,11 +10,11 @@ router.get('/:id', getById);
 router.post("/checkByParticipants", checkByParticipants);
 router.post("/createIfNotExist", createIfNotExist);
 router.post("/getConversationChunkById", getConversationChunkById),
+router.delete('/delete-all', deleteAll)
 
 
 
-
-    module.exports = router
+module.exports = router
 
 
 async function getAll(req, res, next) {
@@ -77,4 +77,13 @@ async function getConversationChunkById(req, res, next) {
         })
         .catch(err => next(err))
 
+}
+
+async function deleteAll(req, res, next) {
+    service.deleteAll()
+    .then(response => {
+        console.log("", response)
+        resHandler.getSuccess(res, response)
+    })
+    .catch(err => next(err))
 }

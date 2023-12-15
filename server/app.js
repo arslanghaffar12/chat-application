@@ -16,7 +16,7 @@ const cors = require("cors");
 const { User } = require("./helpers/db");
 const { postMessage, updateMessage } = require("./chat/chat.service");
 const { updateConversationTime, updateUnreadMessage } = require("./conversation/conversation.service");
-const {validateToken} = require('./helpers/jwt')
+const { validateToken } = require('./helpers/jwt')
 
 
 var corsOptions = {
@@ -24,10 +24,12 @@ var corsOptions = {
     optionsSuccessStatus: 200
 }
 
+app.use(cors(corsOptions));
+
+
 app.use(validateToken)
 
 
-app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -54,7 +56,6 @@ sio.on('connection', function (socket) {
 
     socket.on('add-user', async (user) => {
 
-        console.log('add-user', user);
 
         const userRoom = user._id;
         socket.join(userRoom);
@@ -99,7 +100,33 @@ sio.on('connection', function (socket) {
         if (recipientPersonalRoom) {
             sio.to(recipientPersonalRoom).emit('update-message', updatesMessage);
         } else {
-          console.log('user is not online');
+            console.log('user is not online');
+        }
+
+        const senderId = message.senderId;
+        const senderPersonalRoom = userRooms.get(senderId);
+
+
+
+        if (senderPersonalRoom) {
+            sio.to(senderPersonalRoom).emit('update-status-of-message', updatesMessage)
+        } else {
+            console.log('user is not online');
+        }
+    })
+
+
+    socket.on('update-all-messages-status', async (message) => {
+
+        const senderId = message.senderId;
+        const senderPersonalRoom = userRooms.get(senderId);
+
+
+
+        if (senderPersonalRoom) {
+            sio.to(senderPersonalRoom).emit('update-all-messages-status', 'update all to read')
+        } else {
+            console.log('user is not online');
         }
     })
 
@@ -109,7 +136,7 @@ sio.on('connection', function (socket) {
 
         // Save message to the database if needed
         let newMessage = await postMessage(messageData);
-        console.log('newMessage',newMessage);
+        console.log('newMessage', newMessage);
         let updatedCon = await updateConversationTime(messageData);
         const recipientId = messageData.recipientId;
         const recipientPersonalRoom = userRooms.get(recipientId);

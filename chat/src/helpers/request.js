@@ -23,7 +23,7 @@ export const authenticate = async (requestData) => {
 
     }).then((res) => {
         payload = res.data
-        console.log('response==', payload,res);
+        console.log('response==', payload, res);
         user = payload.data;
         requestData.dispatch(setLogin(payload.data))
 
@@ -49,7 +49,7 @@ export const usersRequest = async (requestData) => {
         url: `${baseUrl}users`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -64,7 +64,7 @@ export const usersRequest = async (requestData) => {
 
 export const getConservationByUser = async (requestData) => {
 
-    console.log('user in getConservationByUser ===',user);
+    console.log('user in getConservationByUser ===', user);
 
     var response = await axios({
         method: 'GET',
@@ -124,7 +124,7 @@ export const getChatByConversationId = async (requestData) => {
         url: `${baseUrl}chat/getByConversationId?conservationId=${requestData.conservationId}`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -139,18 +139,29 @@ export const getChatByConversationId = async (requestData) => {
 
 export const getByCvnIdsRequest = async (requestData) => {
 
-    var response = await axios({
+    var returnResponse;
+    await axios({
         method: 'POST',
         data: requestData.data,
         url: `${baseUrl}chat/getByCoversationIds`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
+        .then(res => {
+            console.log('res in request', res);
+            returnResponse = res
+        })
+        .catch(err => {
+            console.log('res in request err', err);
 
-    let data = response.data;
+        })
+
+    console.log('response in getByCvnIdsRequest ', returnResponse);
+
+    let data = returnResponse?.data;
     // requestData.dispatch(setAllUsers(data.data))
 
     return data
@@ -165,7 +176,7 @@ export const postMessageRequest = async (requestData) => {
         url: `${baseUrl}chat/insert`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -187,7 +198,7 @@ export const addUserRequest = async (requestData) => {
         url: `${baseUrl}users/create`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -206,7 +217,7 @@ export const deleteUserRequest = async (requestData) => {
         url: `${baseUrl}users/${requestData._id}`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -226,7 +237,7 @@ export const userUpdateRequest = async (requestData) => {
         data: requestData.data,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -246,7 +257,7 @@ export const updatePassword = async (requestData) => {
         url: `${baseUrl}users/updatePassword`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -260,13 +271,14 @@ export const updatePassword = async (requestData) => {
 
 export const conversationIdRequest = async (requestData) => {
     console.log('requestData', requestData);
+    
     var response = await axios({
         method: 'POST',
         data: requestData.data,
         url: `${baseUrl}conversation/createIfNotExist`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
     })
@@ -281,18 +293,23 @@ export const conversationIdRequest = async (requestData) => {
 
 export const updateStatusByConversationId = async (requestData) => {
     console.log('requestData', requestData);
-    var response = await axios({
+    var response;
+    await axios({
         method: 'POST',
         data: requestData,
         url: `${baseUrl}chat/requestUpdate`,
         headers: {
             "Content-Type": "application/json",
-            // "Authorization": "Bearer " + user.token,
+            "Authorization": "Bearer " + user.token,
         }
 
+    }).then(res => {
+        response = res
+    }).catch(err => {
+        response = undefined
     })
 
-    let data = response.data;
+    let data = response?.data;
     // requestData.dispatch(setAllUsers(data.data))
 
     return data

@@ -9,6 +9,9 @@ export const storage = {
             value = _default;
         }
         return value;
-    }
+    },
+    clear: () => {
+        localStorage.clear();
+    },
 }
 

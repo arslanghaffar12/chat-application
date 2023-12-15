@@ -185,7 +185,7 @@
     align-items: center;
 }
 
-.unread {   
+.unread {
     align-items: center;
     height: 14px;
     width: 14px;
@@ -199,4 +199,16 @@
     text-align: center;
     justify-content: center;
     color: white;
+}
+
+.message-timestamp {
+    font-size: 8px;
+    color: white;
+    margin-left: 14px;
+}
+
+.message-status {
+    font-size: 8px;
+    color: white;
+    margin-left: 9px;
 }

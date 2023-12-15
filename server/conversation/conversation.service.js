@@ -12,7 +12,8 @@ module.exports = {
   getByUser,
   updateConversationTime,
   updateUnreadMessage,
-  getConversationChunkById
+  getConversationChunkById,
+  deleteAll
 }
 
 async function getAll(req) {
@@ -195,8 +196,14 @@ async function getByUser(userId) {
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ["$conversationId", "$$conversationId"] },
-                status: 'sent'
+                $expr: {
+                  $and: [
+                    { $eq: ["$conversationId", "$$conversationId"] },
+                    { $ne: ["$senderId", userId] }
+                  ]
+                },
+                status: 'sent',
+
               }
             },
             {
@@ -217,6 +224,7 @@ async function getByUser(userId) {
     return conversations
   }
   catch (err) {
+    console.log('errrrrrrrrrrrr===', err);
     throw "Not_found";
   }
 }
@@ -533,5 +541,12 @@ async function getByCoversationId(userId) {
   }
 }
 
+
+async function deleteAll() {
+
+
+  const result = await Conversation.deleteMany();
+
+}
 
 
